@@ -92,7 +92,7 @@ npm run codegen     # Regenerate GraphQL types
 
 ## Build & Integration
 
-Run `npm run build` to produce the `dist/` folder. The build outputs stable filenames (no hashes) and splits vendor dependencies into separate chunks for caching:
+Run `npm run build` to produce the `dist/` folder. Make sure GraphQL types are available before building. The build outputs stable filenames (no hashes) and splits vendor dependencies into separate chunks for caching:
 
 ```
 dist/
@@ -110,7 +110,7 @@ Only `index.js` changes on application updates. Vendor chunks are cache-stable b
 To embed the web component, include the built CSS and JS, then use the custom element:
 
 ```html
-<link rel="stylesheet" href="/assets/index.css">
+<link rel="stylesheet" href="/assets/index.css" />
 <script type="module" src="/assets/index.js"></script>
 <zug-birdnet></zug-birdnet>
 ```
@@ -121,6 +121,6 @@ No routing. The component is self-contained and can be placed anywhere on the pa
 
 App-level settings are in `src/config.ts`:
 
-| Option | Default | Description |
-|---|---|---|
+| Option                 | Default | Description                                                 |
+| ---------------------- | ------- | ----------------------------------------------------------- |
 | `SHOW_DEMO_INFOPOINTS` | `false` | Show static info markers on the map (demo/development only) |
