@@ -92,7 +92,7 @@ npm run codegen     # Regenerate GraphQL types
 
 ## Build & Integration
 
-Run `npm run build` to produce the `dist/` folder. Make sure GraphQL types are available before building. The build outputs stable filenames (no hashes) and splits vendor dependencies into separate chunks for caching:
+Run `npm run build` to produce the `dist/` folder. Make sure GraphQL types are available before building. Set `VITE_BASE_URL` in your `.env` file to configure the base path for all built asset references (see [Configuration](#configuration)). The build outputs stable filenames (no hashes) and splits vendor dependencies into separate chunks for caching:
 
 ```
 dist/
@@ -118,6 +118,24 @@ To embed the web component, include the built CSS and JS, then use the custom el
 No routing. The component is self-contained and can be placed anywhere on the page. Third-party CMS integration (e.g., Contao) only needs to include the built assets and the custom element tag.
 
 ## Configuration
+
+### Environment Variables
+
+Create a `.env` file in the project root (excluded from git) to configure build-time settings:
+
+| Variable        | Default | Description                                                                                                         |
+| --------------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
+| `VITE_BASE_URL` | `/`     | Base URL for all asset paths. Set to the full deployment URL (e.g., `https://static.lbv.de/naechtlicher-vogelzug/`) |
+
+Example `.env`:
+
+```sh
+VITE_BASE_URL=https://static.lbv.de/naechtlicher-vogelzug/
+```
+
+When unset, defaults to `/` which works for local development. The base URL is used both by Vite to prefix built asset paths and at runtime via `import.meta.env.BASE_URL` for dynamic asset references (e.g., `lp.png`).
+
+### App Settings
 
 App-level settings are in `src/config.ts`:
 

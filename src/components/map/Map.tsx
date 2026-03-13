@@ -112,7 +112,7 @@ const Map: React.FC<MapProps> = ({
 
       _map.addSource("light-pollution", {
         type: "image",
-        url: "/lp.png",
+        url: `${import.meta.env.BASE_URL}lp.png`,
         coordinates: [
           [-32, 75],
           [70, 75],
