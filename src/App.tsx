@@ -2,8 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Map from "./components/map/Map.tsx";
 import Timeline from "./components/Timeline";
 import { useDetections } from "./api/useDetections.ts";
-import { StyleProvider } from "@ant-design/cssinjs";
-import { ConfigProvider } from "antd";
 import SpeciesDropdown from "./components/SpeciesDropdown.tsx";
 import { MapLoadingIndicator } from "./components/MapLoadingIndicator.tsx";
 import { usePersistentColors } from "./lib/usePersistentColors.ts";
@@ -51,48 +49,35 @@ function App() {
   }, [detections, selectedSpecies.join(",")]);
 
   return (
-    <StyleProvider layer>
-      <ConfigProvider
-        theme={{
-          token: {
-            colorTextQuaternary: "#fff",
-          },
-        }}
+    <div ref={containerRef} className="flex flex-col h-full relative bg-black">
+      <MapLoadingIndicator loading={loading} />
+      <div className="absolute top-4 left-4 z-10 flex items-start gap-4">
+        <SpeciesDropdown
+          selectedSpecies={selectedSpecies}
+          onChangeSpecies={setSelectedSpecies}
+          speciesColors={speciesColors}
+        />
+        <LayersDropdown />
+      </div>
+      <button
+        type="button"
+        onClick={toggleFullscreen}
+        className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/70 text-white rounded border border-white/20 transition-colors"
+        title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
       >
-        <div
-          ref={containerRef}
-          className="flex flex-col h-full relative bg-black"
-        >
-          <MapLoadingIndicator loading={loading} />
-          <div className="absolute top-4 left-4 z-10 flex items-start gap-4">
-            <SpeciesDropdown
-              selectedSpecies={selectedSpecies}
-              onChangeSpecies={setSelectedSpecies}
-              speciesColors={speciesColors}
-            />
-            <LayersDropdown />
-          </div>
-          <button
-            type="button"
-            onClick={toggleFullscreen}
-            className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/70 text-white rounded border border-white/20 transition-colors"
-            title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-          >
-            {isFullscreen ? (
-              <FullscreenExitOutlined style={{ fontSize: 18 }} />
-            ) : (
-              <FullscreenOutlined style={{ fontSize: 18 }} />
-            )}
-          </button>
-          <Map
-            detections={filteredDetections}
-            selectedSpecies={selectedSpecies}
-            speciesColors={speciesColors}
-          />
-          <Timeline />
-        </div>
-      </ConfigProvider>
-    </StyleProvider>
+        {isFullscreen ? (
+          <FullscreenExitOutlined style={{ fontSize: 18 }} />
+        ) : (
+          <FullscreenOutlined style={{ fontSize: 18 }} />
+        )}
+      </button>
+      <Map
+        detections={filteredDetections}
+        selectedSpecies={selectedSpecies}
+        speciesColors={speciesColors}
+      />
+      <Timeline />
+    </div>
   );
 }
 

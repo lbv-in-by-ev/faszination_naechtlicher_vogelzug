@@ -92,30 +92,27 @@ npm run codegen     # Regenerate GraphQL types
 
 ## Build & Integration
 
-Run `npm run build` to produce the `dist/` folder. Make sure GraphQL types are available before building. Set `VITE_BASE_URL` in your `.env` file to configure the base path for all built asset references (see [Configuration](#configuration)). The build outputs stable filenames (no hashes) and splits vendor dependencies into separate chunks for caching:
+Run `npm run build` to produce the `dist/` folder. Make sure GraphQL types are available before building. Set `VITE_BASE_URL` in your `.env` file to configure the base path for all built asset references (see [Configuration](#configuration)). The build outputs a single self-contained JS bundle with stable filenames (no hashes). All CSS (Tailwind, Ant Design, MapLibre) is inlined into the JS bundle and injected into the shadow DOM at runtime.
 
 ```
 dist/
   index.html
+  lp.png            Light pollution overlay image
   assets/
-    index.css       App styles (Tailwind + Ant Design)
-    index.js        Application code, React, Supercluster, dayjs, SunCalc
-    maplibre.js     MapLibre GL
-    antd.js         Ant Design + icons
-    apollo.js       Apollo Client + graphql
+    index.js        Complete application bundle (all dependencies included)
 ```
 
-Only `index.js` changes on application updates. Vendor chunks are cache-stable between deploys.
-
-To embed the web component, include the built CSS and JS, then use the custom element:
+To embed the web component, include the JS bundle and use the custom element:
 
 ```html
-<link rel="stylesheet" href="/assets/index.css" />
-<script type="module" src="/assets/index.js"></script>
-<zug-birdnet></zug-birdnet>
+<script
+  type="module"
+  src="https://static.lbv.de/naechtlicher-vogelzug/assets/index.js"
+></script>
+<zug-birdnet style="height: 600px;"></zug-birdnet>
 ```
 
-No routing. The component is self-contained and can be placed anywhere on the page. Third-party CMS integration (e.g., Contao) only needs to include the built assets and the custom element tag.
+The component uses shadow DOM for full CSS isolation — host page styles won't interfere with the component, and component styles won't leak to the host page. No separate CSS file is needed. The component is self-contained and can be placed anywhere on the page. Third-party CMS integration (e.g., Contao) only needs to include the JS bundle and the custom element tag.
 
 ## Configuration
 

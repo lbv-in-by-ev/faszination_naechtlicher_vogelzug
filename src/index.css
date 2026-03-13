@@ -2,7 +2,45 @@
 
 @import "tailwindcss";
 
-:root {
+/*
+ * Shadow DOM @property fix
+ *
+ * Tailwind v4 registers internal CSS variables (--tw-border-style, --tw-shadow,
+ * etc.) via @property with `inherits: false; initial-value: <value>`. When CSS
+ * is injected into a shadow root via adoptedStyleSheets, browsers may not honour
+ * the @property initial-value for elements inside the shadow tree, causing those
+ * variables to be undefined and breaking utility classes like `.border`,
+ * `.shadow`, etc.
+ *
+ * This unlayered rule (highest cascade priority) explicitly sets the Tailwind
+ * internal variables so they are always initialised correctly inside the shadow
+ * DOM, regardless of @property support.
+ */
+*,
+::before,
+::after {
+  --tw-border-style: solid;
+  --tw-shadow: 0 0 #0000;
+  --tw-shadow-color: initial;
+  --tw-shadow-alpha: 100%;
+  --tw-inset-shadow: 0 0 #0000;
+  --tw-inset-shadow-color: initial;
+  --tw-inset-shadow-alpha: 100%;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-inset-ring-shadow: 0 0 #0000;
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-outline-style: solid;
+  --tw-translate-x: 0;
+  --tw-translate-y: 0;
+  --tw-translate-z: 0;
+  --tw-scale-x: 1;
+  --tw-scale-y: 1;
+  --tw-scale-z: 1;
+}
+
+/* :host targets the shadow DOM host element (<zug-birdnet>) */
+:host {
+  display: block;
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -18,12 +56,13 @@
 }
 
 @theme {
-  --color-primary-dark: #0E3D7F;
+  --color-primary-dark: #0e3d7f;
   --color-primary-darker: #003761;
-  --color-primary: #41F399;
-  --color-light: #F2F4F8;
+  --color-primary: #41f399;
+  --color-light: #f2f4f8;
 }
 
+/* Scoped inside shadow DOM — these won't leak to the host page */
 a {
   font-weight: 500;
   color: #646cff;
@@ -39,7 +78,7 @@ h1 {
 }
 
 @media (prefers-color-scheme: light) {
-  :root {
+  :host {
     color: #213547;
     background-color: #ffffff;
   }

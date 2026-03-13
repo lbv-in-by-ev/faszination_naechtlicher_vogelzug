@@ -5,7 +5,7 @@ import maplibregl, {
   type LngLatBoundsLike,
 } from "maplibre-gl";
 import Supercluster from "supercluster";
-import "maplibre-gl/dist/maplibre-gl.css";
+// MapLibre CSS is imported inline in main.tsx and injected into shadow DOM
 import { createRoot } from "react-dom/client";
 
 import {
@@ -112,7 +112,7 @@ const Map: React.FC<MapProps> = ({
 
       _map.addSource("light-pollution", {
         type: "image",
-        url: `${import.meta.env.BASE_URL}lp.png`,
+        url: `${import.meta.env.BASE_URL}map-overlays/lp.png`,
         coordinates: [
           [-32, 75],
           [70, 75],
@@ -144,6 +144,9 @@ const Map: React.FC<MapProps> = ({
 
       updateMapSource();
       updateLayerColors();
+
+      // Ensure MapLibre recalculates container size after flex layout settles
+      requestAnimationFrame(() => _map.resize());
     });
 
     _map.on("moveend", updateMapSource);
@@ -251,10 +254,9 @@ const Map: React.FC<MapProps> = ({
 
   return (
     <div
-      className="map-container flex-1"
+      className="map-container flex-1 min-h-0"
       ref={mapContainer}
       data-testid="map-container"
-      style={{ width: "100%", height: "100%" }}
     />
   );
 };

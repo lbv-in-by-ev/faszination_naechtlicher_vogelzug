@@ -13,14 +13,10 @@ export default defineConfig(({ mode }) => {
     build: {
       rollupOptions: {
         output: {
-          entryFileNames: "assets/[name].js",
-          chunkFileNames: "assets/[name].js",
+          entryFileNames: "zug-birdnet.js",
           assetFileNames: "assets/[name][extname]",
-          manualChunks: {
-            maplibre: ["maplibre-gl"],
-            antd: ["antd", "@ant-design/icons"],
-            apollo: ["@apollo/client", "graphql"],
-          },
+          // Single-file output: no code splitting, everything in one bundle
+          inlineDynamicImports: true,
         },
       },
     },

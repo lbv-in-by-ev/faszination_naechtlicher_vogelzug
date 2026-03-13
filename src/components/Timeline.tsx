@@ -147,6 +147,7 @@ const Timeline: React.FC = () => {
               });
             }
           }}
+          popupStyle={{ position: "fixed" }}
           classNames={{
             root: "border-0 border-b rounded-none border-white bg-black text-white w-auto cursor-pointer p-0 pb-1",
             input: "text-white placeholder:text-white w-[13ch]",
