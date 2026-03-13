@@ -45,7 +45,7 @@ const LayersDropdown = () => {
   return (
     <Collapse
       collapsible="header"
-      className="z-10 bg-light rounded-xs w-68 text-sm"
+      className="z-10 bg-light rounded-xs w-68 text-sm pointer-events-auto"
       classNames={{ body: "max-h-96 overflow-auto", header: "border-b-0" }}
       items={[
         {

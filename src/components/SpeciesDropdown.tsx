@@ -142,7 +142,7 @@ const SpeciesDropdown = ({
   return (
     <Collapse
       collapsible="header"
-      className="bg-light rounded-xs w-68 text-sm"
+      className="bg-light rounded-xs w-68 text-sm pointer-events-auto"
       ref={collapseRef}
       classNames={{ body: "max-h-96 overflow-auto", header: "border-b-0" }}
       defaultActiveKey={1}
