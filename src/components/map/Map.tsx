@@ -254,7 +254,7 @@ const Map: React.FC<MapProps> = ({
       className="map-container flex-1"
       ref={mapContainer}
       data-testid="map-container"
-      style={{ width: "100%", height: "100vh" }}
+      style={{ width: "100%", height: "100%" }}
     />
   );
 };

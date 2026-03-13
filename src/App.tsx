@@ -9,10 +9,7 @@ import { MapLoadingIndicator } from "./components/MapLoadingIndicator.tsx";
 import { usePersistentColors } from "./lib/usePersistentColors.ts";
 import LayersDropdown from "./components/LayersDropdown.tsx";
 import { useDatesContext } from "./components/DatesProvider.tsx";
-import {
-  FullscreenOutlined,
-  FullscreenExitOutlined,
-} from "@ant-design/icons";
+import { FullscreenOutlined, FullscreenExitOutlined } from "@ant-design/icons";
 
 export const selectionColors = ["#FF29B4", "#64BEFF", "#00FFCC", "#FFD700"];
 
@@ -62,7 +59,10 @@ function App() {
           },
         }}
       >
-        <div ref={containerRef} className="flex flex-col h-screen relative bg-black">
+        <div
+          ref={containerRef}
+          className="flex flex-col h-full relative bg-black"
+        >
           <MapLoadingIndicator loading={loading} />
           <div className="absolute top-4 left-4 z-10 flex items-start gap-4">
             <SpeciesDropdown
