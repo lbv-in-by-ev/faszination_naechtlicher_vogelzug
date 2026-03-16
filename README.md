@@ -36,16 +36,19 @@ src/
   components/
     DatesProvider.tsx               Time state context (date range, animation, night mode)
     MapProvider.tsx                  MapLibre GL instance context
+    ShadowStyleProvider.tsx         CSS isolation for shadow DOM (adoptedStyleSheets, Ant Design scoping, portal container)
     SpeciesDropdown.tsx             Species selection with search autocomplete
+    SpeciesItem.tsx                 Species list item component
     Timeline.tsx                    Date picker, animation slider, playback controls
     LayersDropdown.tsx              Toggle info layers (light pollution, noise)
+    MapLoadingIndicator.tsx         Loading spinner overlay for map tile fetching
     InfoPopup.tsx                   Map info marker popups
+    useAvailableSpecies.ts          Hook for fetching species available in current viewport
     map/
       Map.tsx                       MapLibre GL initialization and rendering
       clusterUtils.ts               Per-species Supercluster index creation
       colorUtils.ts                 MapLibre paint expression builder
       mapStyles.ts                  Map layer definitions
-      usePersistentColors.ts        Stable color assignment per species
       infopoints.ts                 Static info marker data
   lib/
     apollo-client.ts                Apollo Client with cache type policies
@@ -54,6 +57,7 @@ src/
     getTranslatedSpeciesName.ts     i18n species name lookup
     isNotNull.ts, hasNonNullProp.ts Type guard utilities
     throttle.ts                     Throttle utility
+    usePersistentColors.ts          Stable color assignment per species
   gql/                              Auto-generated GraphQL types (do not edit)
 ```
 
@@ -92,14 +96,14 @@ npm run codegen     # Regenerate GraphQL types
 
 ## Build & Integration
 
-Run `npm run build` to produce the `dist/` folder. Make sure GraphQL types are available before building. Set `VITE_BASE_URL` in your `.env` file to configure the base path for all built asset references (see [Configuration](#configuration)). The build outputs a single self-contained JS bundle with stable filenames (no hashes). All CSS (Tailwind, Ant Design, MapLibre) is inlined into the JS bundle and injected into the shadow DOM at runtime.
+Run `npm run build` to produce the `dist/` folder. Make sure GraphQL types are available before building. Set `VITE_BASE_URL` in your `.env` file to configure the base path for all built asset references (see [Configuration](#configuration)). The build outputs a single self-contained JS bundle (`zug-birdnet.js`) with a stable filename (no hash). All CSS (Tailwind, Ant Design, MapLibre) is inlined into the JS bundle and injected into the shadow DOM at runtime.
 
 ```
 dist/
   index.html
-  lp.png            Light pollution overlay image
-  assets/
-    index.js        Complete application bundle (all dependencies included)
+  zug-birdnet.js          Complete application bundle (all dependencies included)
+  map-overlays/
+    lp.png                Light pollution overlay image
 ```
 
 To embed the web component, include the JS bundle and use the custom element:
@@ -107,7 +111,7 @@ To embed the web component, include the JS bundle and use the custom element:
 ```html
 <script
   type="module"
-  src="https://static.lbv.de/naechtlicher-vogelzug/assets/index.js"
+  src="https://static.lbv.de/naechtlicher-vogelzug/zug-birdnet.js"
 ></script>
 <zug-birdnet style="height: 600px;"></zug-birdnet>
 ```
@@ -118,7 +122,7 @@ The component uses shadow DOM for full CSS isolation — host page styles won't 
 
 ### Environment Variables
 
-Create a `.env` file in the project root (excluded from git) to configure build-time settings:
+A `.env.development` file is included with defaults suitable for local development (`VITE_BASE_URL=/`). To override for production builds, create a `.env` file in the project root (excluded from git):
 
 | Variable        | Default | Description                                                                                                         |
 | --------------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
@@ -138,4 +142,4 @@ App-level settings are in `src/config.ts`:
 
 | Option                 | Default | Description                                                 |
 | ---------------------- | ------- | ----------------------------------------------------------- |
-| `SHOW_DEMO_INFOPOINTS` | `false` | Show static info markers on the map (demo/development only) |
+| `SHOW_DEMO_INFOPOINTS` | `true` | Show static info markers on the map (demo/development only) |
