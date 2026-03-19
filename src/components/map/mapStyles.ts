@@ -3,6 +3,7 @@ export const layers = [
     id: "detections-all-outer",
     type: "circle",
     source: "detections-all",
+    layout: { visibility: "none" },
     paint: {
       "circle-radius": [
         "interpolate",
@@ -21,6 +22,7 @@ export const layers = [
     id: "detections-all-inner",
     type: "circle",
     source: "detections-all",
+    layout: { visibility: "none" },
     paint: {
       "circle-radius": [
         "interpolate",
