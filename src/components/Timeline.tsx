@@ -101,7 +101,7 @@ const Timeline: React.FC = () => {
               togglePlay();
             }}
           >
-            {!isPlaying ? "Autoplay" : "Stop"}
+            {!isPlaying ? "Play" : "Stop"}
           </button>
           <button
             type="button"
