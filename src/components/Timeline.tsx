@@ -127,6 +127,7 @@ const Timeline: React.FC = () => {
         <RangePicker
           showTime
           format="DD.MM.YYYY HH:mm"
+          placement="topLeft"
           separator={<RightOutlined />}
           className="[&.ant-picker-separator]:[--ant-color-text-quaternary:#fff]"
           placeholder={["Von", "Bis"]}
