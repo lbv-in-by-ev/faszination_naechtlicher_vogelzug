@@ -57,35 +57,37 @@ function App() {
 
   return (
     <div ref={containerRef} className="flex flex-col h-full relative bg-black" data-popup-container>
-      <MapLoadingIndicator loading={loading} />
-      <div className="absolute top-4 left-4 z-10 flex items-start gap-4 pointer-events-none">
-        <SpeciesDropdown
+      <div className="relative grow flex flex-col">
+        <MapLoadingIndicator loading={loading} />
+        <div className="absolute top-4 left-4 z-10 flex items-start gap-4 pointer-events-none">
+          <SpeciesDropdown
+            selectedSpecies={selectedSpecies}
+            onChangeSpecies={setSelectedSpecies}
+            onSpeciesLabelsChange={setSpeciesLabels}
+            speciesColors={speciesColors}
+          />
+          <LayersDropdown />
+        </div>
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/70 text-white rounded border border-white/20 transition-colors"
+          title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+        >
+          {isFullscreen ? (
+            <FullscreenExitOutlined style={{ fontSize: 18 }} />
+          ) : (
+            <FullscreenOutlined style={{ fontSize: 18 }} />
+          )}
+        </button>
+        <Map
+          allDetections={filteredAllDetections}
+          activeDetections={filteredActiveDetections}
           selectedSpecies={selectedSpecies}
-          onChangeSpecies={setSelectedSpecies}
-          onSpeciesLabelsChange={setSpeciesLabels}
           speciesColors={speciesColors}
+          showAllDetections={showAllDetections}
         />
-        <LayersDropdown />
       </div>
-      <button
-        type="button"
-        onClick={toggleFullscreen}
-        className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/70 text-white rounded border border-white/20 transition-colors"
-        title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-      >
-        {isFullscreen ? (
-          <FullscreenExitOutlined style={{ fontSize: 18 }} />
-        ) : (
-          <FullscreenOutlined style={{ fontSize: 18 }} />
-        )}
-      </button>
-      <Map
-        allDetections={filteredAllDetections}
-        activeDetections={filteredActiveDetections}
-        selectedSpecies={selectedSpecies}
-        speciesColors={speciesColors}
-        showAllDetections={showAllDetections}
-      />
       <Timeline
         showAllDetections={showAllDetections}
         onToggleAllDetections={setShowAllDetections}

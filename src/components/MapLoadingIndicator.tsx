@@ -5,14 +5,14 @@ export const MapLoadingIndicator = ({ loading }: { loading: boolean }) => {
   if (!loading) return null;
 
   return (
-    <div className="absolute top-6 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
-      <div className="bg-black/20 backdrop-blur-md text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-3 border border-white/10">
+    <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+      <div className="bg-black/40 backdrop-blur-md text-white px-8 py-4 rounded-lg shadow-lg flex items-center gap-3 border border-white/15">
         <Spin
           indicator={
-            <LoadingOutlined style={{ fontSize: 18, color: "#fff" }} spin />
+            <LoadingOutlined style={{ fontSize: 24, color: "#fff" }} spin />
           }
         />
-        <span className="text-sm font-medium">Wird geladen...</span>
+        <span className="text-base font-medium">Wird geladen...</span>
       </div>
     </div>
   );
