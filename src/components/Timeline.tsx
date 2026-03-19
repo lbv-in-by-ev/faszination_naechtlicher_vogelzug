@@ -454,10 +454,11 @@ const Timeline: React.FC<TimelineProps> = ({
           <input
             type="range"
             className="timeline-slider"
-            min={0}
-            max={totalMinutes}
+            min={-0.5}
+            max={totalMinutes - 0.5}
+            step="any"
             value={currentSliderMinute}
-            onChange={(e) => { handleSliderChange(Number(e.target.value)); }}
+            onChange={(e) => { handleSliderChange(Math.round(Number(e.target.value))); }}
           />
         </div>
         <p className="whitespace-nowrap min-w-fit">
