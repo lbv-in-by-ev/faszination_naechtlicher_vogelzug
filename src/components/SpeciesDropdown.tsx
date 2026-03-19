@@ -54,11 +54,10 @@ const SpeciesDropdown = ({
       fetchPolicy: "cache-and-network",
     });
 
-  const topThreeSpecies = [
-    data?.species1,
-    data?.species2,
-    data?.species3,
-  ].filter(isNotNull);
+  const topThreeSpecies = useMemo(
+    () => [data?.species1, data?.species2, data?.species3].filter(isNotNull),
+    [data?.species1, data?.species2, data?.species3],
+  );
 
   useEffect(() => {
     const labels: Record<string, string> = {};
