@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { DetectionItemFragment } from "../gql/graphql.ts";
-import { Checkbox, DatePicker, Slider } from "antd";
+import { Checkbox, DatePicker } from "antd";
 import dayjs, { type Dayjs } from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
@@ -151,8 +151,8 @@ const Timeline: React.FC<TimelineProps> = ({
 
     if (visibleDetections.length === 0) return null;
 
-    const numBins = Math.min(totalMinutes, 300);
-    const minutesPerBin = totalMinutes / numBins;
+    // One bin per virtual minute = one bin per slider step.
+    const numBins = totalMinutes;
 
     // bins[i] = Map<speciesId, count>
     const bins: Map<string, number>[] = Array.from(
@@ -175,10 +175,8 @@ const Timeline: React.FC<TimelineProps> = ({
       }
       if (virtualMinute === null) continue;
 
-      const binIndex = Math.min(
-        Math.floor(virtualMinute / minutesPerBin),
-        numBins - 1,
-      );
+      // virtualMinute is already the bin index (one minute per bin).
+      const binIndex = Math.min(virtualMinute, numBins - 1);
       const species = detection.species.id;
       bins[binIndex].set(species, (bins[binIndex].get(species) ?? 0) + 1);
     }
@@ -308,8 +306,8 @@ const Timeline: React.FC<TimelineProps> = ({
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const binIndex = getBinIndexFromEvent(e);
       if (binIndex === null || !histogramBins) return;
-      const minutesPerBin = totalMinutes / histogramBins.numBins;
-      setSliderMinute(Math.max(1, Math.round(binIndex * minutesPerBin)));
+      // bin i = virtual minute i — setSliderMinute takes virtual minutes directly
+      setSliderMinute(binIndex);
     },
     [getBinIndexFromEvent, histogramBins, totalMinutes, setSliderMinute],
   );
@@ -421,28 +419,45 @@ const Timeline: React.FC<TimelineProps> = ({
 
       <div className="flex items-center mt-2">
         <div className="grow mr-4 flex flex-col">
-          <canvas
-            ref={histogramRef}
-            className="w-full cursor-pointer"
-            style={{ height: 40 }}
-            onMouseMove={handleCanvasMouseMove}
-            onMouseLeave={handleCanvasMouseLeave}
-            onClick={handleCanvasClick}
-          />
-          <Slider
-            min={1}
+          <div style={{ padding: "0 6px" }}>
+            <canvas
+              ref={histogramRef}
+              className="w-full cursor-pointer block"
+              style={{ height: 40 }}
+              onMouseMove={handleCanvasMouseMove}
+              onMouseLeave={handleCanvasMouseLeave}
+              onClick={handleCanvasClick}
+            />
+          </div>
+          <style>{`
+            .timeline-slider {
+              appearance: none; -webkit-appearance: none;
+              width: 100%; height: 2px;
+              background: rgba(255,255,255,0.3);
+              border-radius: 1px; cursor: pointer; outline: none;
+              margin-top: 6px; display: block;
+            }
+            .timeline-slider::-webkit-slider-thumb {
+              -webkit-appearance: none; appearance: none;
+              width: 12px; height: 12px;
+              background: #1677ff;
+              clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+              cursor: pointer; margin-top: -5px;
+            }
+            .timeline-slider::-moz-range-thumb {
+              width: 12px; height: 12px;
+              background: #1677ff; border: none;
+              clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+              cursor: pointer;
+            }
+          `}</style>
+          <input
+            type="range"
+            className="timeline-slider"
+            min={0}
             max={totalMinutes}
             value={currentSliderMinute}
-            onChange={handleSliderChange}
-            className="mt-1"
-            classNames={{
-              track: "bg-primary",
-              rail: "bg-gray-400",
-              handle: "[&:after]:bg-primary [&:after]:shadow-none",
-            }}
-            tooltip={{
-              formatter: () => visualisationTimeRange.from.format("HH:mm"),
-            }}
+            onChange={(e) => { handleSliderChange(Number(e.target.value)); }}
           />
         </div>
         <p className="whitespace-nowrap min-w-fit">
