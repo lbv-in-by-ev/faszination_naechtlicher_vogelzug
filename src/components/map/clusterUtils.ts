@@ -1,5 +1,5 @@
 import Supercluster, { type AnyProps, type PointFeature } from "supercluster";
-import type { Feature, Point } from "geojson";
+import type { Feature, FeatureCollection, Point } from "geojson";
 import type { DetectionItemFragment } from "../../gql/graphql.ts";
 
 export const detectionsToFeatures = (
@@ -16,6 +16,50 @@ export const detectionsToFeatures = (
       species: d.species.id,
     },
   }));
+};
+
+// Deduplicates detections to one point per unique location.
+// When multiple species appear at the same spot, the dominant (most frequent) one wins.
+export const detectionsToUniqueLocations = (
+  detections: DetectionItemFragment[],
+): FeatureCollection<Point> => {
+  const locationMap = new Map<
+    string,
+    { lat: number; lon: number; speciesCounts: Map<string, number> }
+  >();
+
+  for (const d of detections) {
+    const key = `${d.coords.lat.toFixed(6)},${d.coords.lon.toFixed(6)}`;
+    let loc = locationMap.get(key);
+    if (!loc) {
+      loc = { lat: d.coords.lat, lon: d.coords.lon, speciesCounts: new Map() };
+      locationMap.set(key, loc);
+    }
+    loc.speciesCounts.set(
+      d.species.id,
+      (loc.speciesCounts.get(d.species.id) ?? 0) + 1,
+    );
+  }
+
+  const features: Feature<Point>[] = [...locationMap.values()].map(
+    ({ lat, lon, speciesCounts }) => {
+      let dominantSpecies = "";
+      let maxCount = 0;
+      speciesCounts.forEach((count, species) => {
+        if (count > maxCount) {
+          maxCount = count;
+          dominantSpecies = species;
+        }
+      });
+      return {
+        type: "Feature",
+        geometry: { type: "Point", coordinates: [lon, lat] },
+        properties: { species: dominantSpecies },
+      };
+    },
+  );
+
+  return { type: "FeatureCollection", features };
 };
 
 // Creates an index for each species

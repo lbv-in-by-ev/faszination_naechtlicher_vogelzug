@@ -12,6 +12,7 @@ import {
   detectionsToFeatures,
   createSuperclusterIndices,
   getCombinedClusters,
+  detectionsToUniqueLocations,
 } from "./clusterUtils";
 import { layers } from "./mapStyles";
 import type { DetectionItemFragment } from "../../gql/graphql.ts";
@@ -57,8 +58,8 @@ const Map: React.FC<MapProps> = ({
   const { visualisationTimeRange } = useDatesContext();
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
-  const clusterIndices = useRef<Record<string, Supercluster>>({});
-  const allClusterIndices = useRef<Record<string, Supercluster>>({});
+  const clusterIndices = useRef<Record<string, Supercluster>>({}); // active layer still clusters
+  const allDetectionsGeoJSON = useRef<ReturnType<typeof detectionsToUniqueLocations>>({ type: "FeatureCollection", features: [] });
   const fromDate = visualisationTimeRange.from.toDate();
   const { setMap } = useMapContext();
   const markersRef = useRef<maplibregl.Marker[]>([]);
@@ -85,10 +86,7 @@ const Map: React.FC<MapProps> = ({
       features: getCombinedClusters(clusterIndices.current, bounds, zoom),
     });
 
-    allSource.setData({
-      type: "FeatureCollection",
-      features: getCombinedClusters(allClusterIndices.current, bounds, zoom),
-    });
+    allSource.setData(allDetectionsGeoJSON.current);
   }, []);
 
   const updateLayerColors = useCallback(() => {
@@ -265,7 +263,7 @@ const Map: React.FC<MapProps> = ({
 
   useEffect(() => {
     if (!allDetections) return;
-    allClusterIndices.current = createSuperclusterIndices(detectionsToFeatures(allDetections));
+    allDetectionsGeoJSON.current = detectionsToUniqueLocations(allDetections);
     updateMapSource();
   }, [allDetections, updateMapSource]);
 

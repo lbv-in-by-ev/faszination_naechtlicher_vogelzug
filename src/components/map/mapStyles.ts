@@ -4,15 +4,7 @@ export const layers = [
     type: "circle",
     source: "detections-all",
     paint: {
-      "circle-radius": [
-        "interpolate",
-        ["linear"],
-        ["coalesce", ["get", "point_count"], 1],
-        1,
-        10,
-        100,
-        100,
-      ],
+      "circle-radius": 10,
       "circle-color": "#cccccc",
       "circle-opacity": 0.15,
     },
@@ -22,15 +14,7 @@ export const layers = [
     type: "circle",
     source: "detections-all",
     paint: {
-      "circle-radius": [
-        "interpolate",
-        ["linear"],
-        ["coalesce", ["get", "point_count"], 1],
-        1,
-        10,
-        100,
-        100,
-      ],
+      "circle-radius": 10,
       "circle-color": "#cccccc",
       "circle-opacity": 0.2,
       "circle-blur": 1.5,
