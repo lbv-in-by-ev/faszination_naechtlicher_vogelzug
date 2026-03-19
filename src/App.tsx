@@ -55,7 +55,7 @@ function App() {
   }, [activeDetections, selectedSpecies.join(",")]);
 
   return (
-    <div ref={containerRef} className="flex flex-col h-full relative bg-black">
+    <div ref={containerRef} className="flex flex-col h-full relative bg-black" data-popup-container>
       <MapLoadingIndicator loading={loading} />
       <div className="absolute top-4 left-4 z-10 flex items-start gap-4 pointer-events-none">
         <SpeciesDropdown
