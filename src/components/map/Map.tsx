@@ -46,6 +46,8 @@ interface MapProps {
   selectedSpecies: string[];
   speciesColors: Record<string, string>;
   showAllDetections: boolean;
+  clusterActive: boolean;
+  clusterAll: boolean;
 }
 
 const Map: React.FC<MapProps> = ({
@@ -54,11 +56,15 @@ const Map: React.FC<MapProps> = ({
   selectedSpecies,
   speciesColors,
   showAllDetections,
+  clusterActive,
+  clusterAll,
 }) => {
   const { visualisationTimeRange } = useDatesContext();
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
-  const clusterIndices = useRef<Record<string, Supercluster>>({}); // active layer still clusters
+  const clusterIndices = useRef<Record<string, Supercluster>>({});
+  const allClusterIndices = useRef<Record<string, Supercluster>>({});
+  const activeGeoJSON = useRef<ReturnType<typeof detectionsToUniqueLocations>>({ type: "FeatureCollection", features: [] });
   const allDetectionsGeoJSON = useRef<ReturnType<typeof detectionsToUniqueLocations>>({ type: "FeatureCollection", features: [] });
   const fromDate = visualisationTimeRange.from.toDate();
   const { setMap } = useMapContext();
@@ -73,21 +79,28 @@ const Map: React.FC<MapProps> = ({
     const allSource = map.getSource<GeoJSONSource>("detections-all");
     if (!activeSource || !allSource) return;
 
-    const bounds = map.getBounds().toArray().flat() as [
-      number,
-      number,
-      number,
-      number,
-    ];
-    const zoom = Math.round(map.getZoom());
+    if (clusterActive) {
+      const bounds = map.getBounds().toArray().flat() as [number, number, number, number];
+      const zoom = Math.round(map.getZoom());
+      activeSource.setData({
+        type: "FeatureCollection",
+        features: getCombinedClusters(clusterIndices.current, bounds, zoom),
+      });
+    } else {
+      activeSource.setData(activeGeoJSON.current);
+    }
 
-    activeSource.setData({
-      type: "FeatureCollection",
-      features: getCombinedClusters(clusterIndices.current, bounds, zoom),
-    });
-
-    allSource.setData(allDetectionsGeoJSON.current);
-  }, []);
+    if (clusterAll) {
+      const bounds = map.getBounds().toArray().flat() as [number, number, number, number];
+      const zoom = Math.round(map.getZoom());
+      allSource.setData({
+        type: "FeatureCollection",
+        features: getCombinedClusters(allClusterIndices.current, bounds, zoom),
+      });
+    } else {
+      allSource.setData(allDetectionsGeoJSON.current);
+    }
+  }, [clusterActive, clusterAll]);
 
   const updateLayerColors = useCallback(() => {
     const map = mapRef.current;
@@ -256,16 +269,24 @@ const Map: React.FC<MapProps> = ({
 
   useEffect(() => {
     if (!activeDetections) return;
-    clusterIndices.current = createSuperclusterIndices(detectionsToFeatures(activeDetections));
+    if (clusterActive) {
+      clusterIndices.current = createSuperclusterIndices(detectionsToFeatures(activeDetections));
+    } else {
+      activeGeoJSON.current = detectionsToUniqueLocations(activeDetections);
+    }
     updateMapSource();
     updateLayerColors();
-  }, [activeDetections, updateMapSource, updateLayerColors]);
+  }, [activeDetections, clusterActive, updateMapSource, updateLayerColors]);
 
   useEffect(() => {
     if (!allDetections) return;
-    allDetectionsGeoJSON.current = detectionsToUniqueLocations(allDetections);
+    if (clusterAll) {
+      allClusterIndices.current = createSuperclusterIndices(detectionsToFeatures(allDetections));
+    } else {
+      allDetectionsGeoJSON.current = detectionsToUniqueLocations(allDetections);
+    }
     updateMapSource();
-  }, [allDetections, updateMapSource]);
+  }, [allDetections, clusterAll, updateMapSource]);
 
   useEffect(() => {
     updateLayerColors();

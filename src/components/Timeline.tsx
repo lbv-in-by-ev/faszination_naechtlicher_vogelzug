@@ -10,6 +10,7 @@ import {
   CaretLeftOutlined,
   CaretRightOutlined,
   RightOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import { useDatesContext } from "./DatesProvider.tsx";
 import { useMapContext } from "./MapProvider.tsx";
@@ -66,6 +67,10 @@ const disabledRangeDate = (
 interface TimelineProps {
   showAllDetections: boolean;
   onToggleAllDetections: (value: boolean) => void;
+  clusterActive: boolean;
+  onToggleClusterActive: (value: boolean) => void;
+  clusterAll: boolean;
+  onToggleClusterAll: (value: boolean) => void;
   allDetections: DetectionItemFragment[];
   speciesColors: Record<string, string>;
   speciesLabels: Record<string, string>;
@@ -74,6 +79,10 @@ interface TimelineProps {
 const Timeline: React.FC<TimelineProps> = ({
   showAllDetections,
   onToggleAllDetections,
+  clusterActive,
+  onToggleClusterActive,
+  clusterAll,
+  onToggleClusterAll,
   allDetections,
   speciesColors,
   speciesLabels,
@@ -255,6 +264,8 @@ const Timeline: React.FC<TimelineProps> = ({
 
   // --- Histogram interaction ---
 
+  const [showOptions, setShowOptions] = useState(false);
+
   const [hoveredBin, setHoveredBin] = useState<{
     binIndex: number;
     x: number;
@@ -329,7 +340,7 @@ const Timeline: React.FC<TimelineProps> = ({
   }, [hoveredBin, histogramBins, totalMinutes, virtualMinuteToTime]);
 
   return (
-    <div className="bg-black border-t border-t-white text-white p-4">
+    <div className="bg-black border-t border-t-white text-white p-4 relative">
       <div className="my-2 flex">
         <div className="mr-auto">
           <button
@@ -395,26 +406,87 @@ const Timeline: React.FC<TimelineProps> = ({
             popup: "text-black",
           }}
         />
-        <div className="ml-auto flex gap-4 items-center">
-          <Checkbox
-            className="text-white"
-            checked={showAllDetections}
-            onChange={(e) => {
-              onToggleAllDetections(e.target.checked);
-            }}
+        <div className="ml-auto">
+          <button
+            type="button"
+            className="p-2 py-1 border border-white/40 hover:border-white transition-colors"
+            onClick={() => { setShowOptions((v) => !v); }}
+            title="Einstellungen"
           >
-            Alle Detektionen
-          </Checkbox>
-          <Checkbox
-            className="text-white"
-            checked={isNightOnly}
-            onChange={(e) => {
-              setIsNightOnly(e.target.checked);
-            }}
-          >
-            Nur Nächte zeigen
-          </Checkbox>
+            <SettingOutlined className="text-white" />
+          </button>
         </div>
+        {showOptions && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+            onClick={() => { setShowOptions(false); }}
+          >
+            <div
+              className="rounded-2xl w-[420px] overflow-hidden"
+              style={{
+                background: "linear-gradient(180deg, #1e1e24 0%, #16161b 100%)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                boxShadow: "0 25px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04) inset",
+              }}
+              onClick={(e) => { e.stopPropagation(); }}
+            >
+              <div
+                className="flex items-center justify-between"
+                style={{
+                  padding: "20px 28px 16px",
+                  borderBottom: "1px solid rgba(255,255,255,0.06)",
+                }}
+              >
+                <span
+                  className="font-semibold tracking-wide"
+                  style={{ color: "rgba(255,255,255,0.85)", fontSize: "15px", letterSpacing: "0.03em" }}
+                >
+                  Einstellungen
+                </span>
+                <button
+                  type="button"
+                  className="transition-colors leading-none"
+                  style={{ color: "rgba(255,255,255,0.3)", fontSize: "18px" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.8)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.3)"; }}
+                  onClick={() => { setShowOptions(false); }}
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="flex flex-col" style={{ padding: "24px 28px 28px", gap: "20px" }}>
+                <Checkbox
+                  className="text-white"
+                  checked={isNightOnly}
+                  onChange={(e) => { setIsNightOnly(e.target.checked); }}
+                >
+                  Nur Nächte zeigen
+                </Checkbox>
+                <Checkbox
+                  className="text-white"
+                  checked={clusterActive}
+                  onChange={(e) => { onToggleClusterActive(e.target.checked); }}
+                >
+                  Aktive Detektionen gruppieren
+                </Checkbox>
+                <Checkbox
+                  className="text-white"
+                  checked={showAllDetections}
+                  onChange={(e) => { onToggleAllDetections(e.target.checked); }}
+                >
+                  Alle Detektionen im ausgewählten Zeitraum
+                </Checkbox>
+                <Checkbox
+                  className="text-white"
+                  checked={clusterAll}
+                  onChange={(e) => { onToggleClusterAll(e.target.checked); }}
+                >
+                  Alle Detektionen gruppieren
+                </Checkbox>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center mt-2">

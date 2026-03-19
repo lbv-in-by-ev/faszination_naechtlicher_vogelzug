@@ -17,7 +17,9 @@ function App() {
   const { allDetections, activeDetections, loading } = useDetections(selectedSpecies);
   const { setIsPlaybackBlocked } = useDatesContext();
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showAllDetections, setShowAllDetections] = useState(true);
+  const [showAllDetections, setShowAllDetections] = useState(false);
+  const [clusterActive, setClusterActive] = useState(false);
+  const [clusterAll, setClusterAll] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -86,11 +88,17 @@ function App() {
           selectedSpecies={selectedSpecies}
           speciesColors={speciesColors}
           showAllDetections={showAllDetections}
+          clusterActive={clusterActive}
+          clusterAll={clusterAll}
         />
       </div>
       <Timeline
         showAllDetections={showAllDetections}
         onToggleAllDetections={setShowAllDetections}
+        clusterActive={clusterActive}
+        onToggleClusterActive={setClusterActive}
+        clusterAll={clusterAll}
+        onToggleClusterAll={setClusterAll}
         allDetections={filteredAllDetections}
         speciesColors={speciesColors}
         speciesLabels={speciesLabels}
