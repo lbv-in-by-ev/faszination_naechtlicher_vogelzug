@@ -74,15 +74,18 @@ const DatesProvider = ({ children }: PropsWithChildren) => {
       let accumulated = 0;
 
       while (currentDayLoop.isBefore(dateRange.to)) {
+        // Pass noon (local) to suncalc so it sees the correct UTC calendar day.
+        // Midnight local in UTC+1 is 23:00 UTC the previous day, which would
+        // cause suncalc to compute times for the wrong day.
         const sunTimesToday = getTimes(
-          currentDayLoop.toDate(),
+          currentDayLoop.hour(12).toDate(),
           ...sunCalcCoordinates,
         );
         const sunsetToday = dayjs(sunTimesToday.sunset);
 
         const nextDay = currentDayLoop.add(1, "day");
         const sunTimesTomorrow = getTimes(
-          nextDay.toDate(),
+          nextDay.hour(12).toDate(),
           ...sunCalcCoordinates,
         );
         const sunriseTomorrow = dayjs(sunTimesTomorrow.dawn);
@@ -118,6 +121,8 @@ const DatesProvider = ({ children }: PropsWithChildren) => {
 
   const setSliderMinute = useCallback(
     (virtualMinute: number) => {
+      if (timeSegments.length === 0) return;
+
       const clampedMinute = Math.max(0, Math.min(virtualMinute, totalMinutes));
       setCurrentSliderMinute(clampedMinute);
 
@@ -188,6 +193,11 @@ const DatesProvider = ({ children }: PropsWithChildren) => {
   }, [isPlaying, isPlaybackBlocked, currentSliderMinute, totalMinutes, setSliderMinute]);
 
   useEffect(() => {
+    if (timeSegments.length === 0) {
+      setCurrentSliderMinute(0);
+      setVisualisationTimeRange({ from: dateRange.from, to: dateRange.to });
+      return;
+    }
     // reset slider back to 0
     setSliderMinute(0);
   }, [totalMinutes]);
