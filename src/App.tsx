@@ -13,6 +13,7 @@ export const selectionColors = ["#FF29B4", "#64BEFF", "#00FFCC", "#FFD700"];
 
 function App() {
   const [selectedSpecies, setSelectedSpecies] = useState<string[]>([]);
+  const [speciesLabels, setSpeciesLabels] = useState<Record<string, string>>({});
   const { allDetections, activeDetections, loading } = useDetections(selectedSpecies);
   const { setIsPlaybackBlocked } = useDatesContext();
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -61,6 +62,7 @@ function App() {
         <SpeciesDropdown
           selectedSpecies={selectedSpecies}
           onChangeSpecies={setSelectedSpecies}
+          onSpeciesLabelsChange={setSpeciesLabels}
           speciesColors={speciesColors}
         />
         <LayersDropdown />
@@ -87,6 +89,9 @@ function App() {
       <Timeline
         showAllDetections={showAllDetections}
         onToggleAllDetections={setShowAllDetections}
+        allDetections={filteredAllDetections}
+        speciesColors={speciesColors}
+        speciesLabels={speciesLabels}
       />
     </div>
   );

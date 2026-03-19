@@ -21,6 +21,7 @@ import useAvailableSpecies from "./useAvailableSpecies.ts";
 interface Props {
   selectedSpecies: string[];
   onChangeSpecies: (species: string[]) => void;
+  onSpeciesLabelsChange: (labels: Record<string, string>) => void;
   speciesColors: Record<string, string>;
 }
 
@@ -35,6 +36,7 @@ let scrollContainerInitially = true;
 const SpeciesDropdown = ({
   selectedSpecies,
   onChangeSpecies,
+  onSpeciesLabelsChange,
   speciesColors,
 }: Props) => {
   const [searchValue, setSearchValue] = useState("");
@@ -57,6 +59,19 @@ const SpeciesDropdown = ({
     data?.species2,
     data?.species3,
   ].filter(isNotNull);
+
+  useEffect(() => {
+    const labels: Record<string, string> = {};
+    for (const s of topThreeSpecies) {
+      if (selectedSpecies.includes(s.id)) {
+        labels[s.id] = getTranslatedSpeciesName(s as Species);
+      }
+    }
+    if (customSpecies && selectedSpecies.includes(customSpecies.id)) {
+      labels[customSpecies.id] = getTranslatedSpeciesName(customSpecies);
+    }
+    onSpeciesLabelsChange(labels);
+  }, [topThreeSpecies, customSpecies, selectedSpecies, onSpeciesLabelsChange]);
 
   // Debounced search function
   const debouncedSearch = useCallback(
