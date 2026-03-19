@@ -13,6 +13,7 @@ import { getTimes } from "suncalc";
 interface ContextValues {
   dateRange: { from: Dayjs; to: Dayjs };
   visualisationTimeRange: { from: Dayjs; to: Dayjs };
+  timeSegments: TimeSegment[];
   totalMinutes: number;
   currentSliderMinute: number;
   windowSize: number;
@@ -34,7 +35,7 @@ const PLAYBACK_STEP_MINUTES = 1;
 export const DatesContext = createContext<ContextValues | null>(null);
 const sunCalcCoordinates: [number, number] = [49.018624, 12.095446];
 
-interface TimeSegment {
+export interface TimeSegment {
   start: Dayjs;
   end: Dayjs;
   durationMinutes: number;
@@ -202,6 +203,7 @@ const DatesProvider = ({ children }: PropsWithChildren) => {
     () => ({
       dateRange,
       visualisationTimeRange,
+      timeSegments,
       totalMinutes,
       currentSliderMinute,
       windowSize,
@@ -218,6 +220,7 @@ const DatesProvider = ({ children }: PropsWithChildren) => {
     [
       dateRange,
       visualisationTimeRange,
+      timeSegments,
       totalMinutes,
       currentSliderMinute,
       windowSize,

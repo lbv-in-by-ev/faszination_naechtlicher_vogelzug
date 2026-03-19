@@ -13,9 +13,10 @@ export const selectionColors = ["#FF29B4", "#64BEFF", "#00FFCC", "#FFD700"];
 
 function App() {
   const [selectedSpecies, setSelectedSpecies] = useState<string[]>([]);
-  const { data: detections, loading } = useDetections(selectedSpecies);
+  const { allDetections, activeDetections, loading } = useDetections(selectedSpecies);
   const { setIsPlaybackBlocked } = useDatesContext();
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showAllDetections, setShowAllDetections] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -43,10 +44,15 @@ function App() {
 
   const speciesColors = usePersistentColors(selectedSpecies, selectionColors);
 
-  const filteredDetections = useMemo(() => {
+  const filteredAllDetections = useMemo(() => {
     // Remove species that the user has deselected, without waiting for the fetch to finish
-    return detections.filter((d) => selectedSpecies.includes(d.species.id));
-  }, [detections, selectedSpecies.join(",")]);
+    return allDetections.filter((d) => selectedSpecies.includes(d.species.id));
+  }, [allDetections, selectedSpecies.join(",")]);
+
+  const filteredActiveDetections = useMemo(() => {
+    // Remove species that the user has deselected, without waiting for the fetch to finish
+    return activeDetections.filter((d) => selectedSpecies.includes(d.species.id));
+  }, [activeDetections, selectedSpecies.join(",")]);
 
   return (
     <div ref={containerRef} className="flex flex-col h-full relative bg-black">
@@ -72,11 +78,16 @@ function App() {
         )}
       </button>
       <Map
-        detections={filteredDetections}
+        allDetections={filteredAllDetections}
+        activeDetections={filteredActiveDetections}
         selectedSpecies={selectedSpecies}
         speciesColors={speciesColors}
+        showAllDetections={showAllDetections}
       />
-      <Timeline />
+      <Timeline
+        showAllDetections={showAllDetections}
+        onToggleAllDetections={setShowAllDetections}
+      />
     </div>
   );
 }

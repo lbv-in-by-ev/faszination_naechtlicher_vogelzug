@@ -1,5 +1,42 @@
 export const layers = [
   {
+    id: "detections-all-outer",
+    type: "circle",
+    source: "detections-all",
+    paint: {
+      "circle-radius": [
+        "interpolate",
+        ["linear"],
+        ["coalesce", ["get", "point_count"], 1],
+        1,
+        10,
+        100,
+        100,
+      ],
+      "circle-color": "#cccccc",
+      "circle-opacity": 0.15,
+    },
+  },
+  {
+    id: "detections-all-inner",
+    type: "circle",
+    source: "detections-all",
+    paint: {
+      "circle-radius": [
+        "interpolate",
+        ["linear"],
+        ["coalesce", ["get", "point_count"], 1],
+        1,
+        10,
+        100,
+        100,
+      ],
+      "circle-color": "#cccccc",
+      "circle-opacity": 0.2,
+      "circle-blur": 1.5,
+    },
+  },
+  {
     id: "cluster-glow-outer",
     type: "circle",
     source: "detections-aggregated",

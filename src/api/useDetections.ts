@@ -41,7 +41,7 @@ function padBounds(viewport: Bounds, factor = 0.5): Bounds {
 
 export function useDetections(species: string[]) {
   const { map } = useMapContext();
-  const { visualisationTimeRange: period } = useDatesContext();
+  const { dateRange, visualisationTimeRange, isNightOnly, timeSegments } = useDatesContext();
   const fetchedBoundsRef = useRef<Bounds | null>(null);
   const [queryBounds, setQueryBounds] = useState<Bounds | null>(null);
 
@@ -78,8 +78,8 @@ export function useDetections(species: string[]) {
         ? {
             ...queryBounds,
             period: {
-              from: toIso(period.from.startOf("day")),
-              to: toIso(period.from.endOf("day")),
+              from: toIso(dateRange.from),
+              to: toIso(dateRange.to),
             },
             first: BATCH_SIZE,
             species: [...species].sort(),
@@ -90,7 +90,8 @@ export function useDetections(species: string[]) {
       queryBounds?.ne.lon,
       queryBounds?.sw.lat,
       queryBounds?.sw.lon,
-      period.from.format("YYYY-MM-DD"),
+      dateRange.from.valueOf(),
+      dateRange.to.valueOf(),
       species.join(","),
     ],
   );
@@ -105,19 +106,27 @@ export function useDetections(species: string[]) {
 
   const effectiveData = data ?? previousData;
 
-  const filteredDetections = useMemo(() => {
+  const allDetections = useMemo(() => {
     if (!effectiveData?.detections.nodes) return [];
-
     const nodes = effectiveData.detections.nodes.filter(isNotNull);
-
+    if (!isNightOnly) return nodes;
     return nodes.filter((detection) => {
-      const detectionTime = dayjs(detection.timestamp);
-      return (
-        detectionTime.isSameOrAfter(period.from) &&
-        detectionTime.isBefore(period.to)
+      const t = dayjs(detection.timestamp);
+      return timeSegments.some(
+        (seg) => t.isSameOrAfter(seg.start) && t.isBefore(seg.end),
       );
     });
-  }, [effectiveData, period.from.valueOf(), period.to.valueOf()]);
+  }, [effectiveData, isNightOnly, timeSegments]);
+
+  const activeDetections = useMemo(() => {
+    return allDetections.filter((detection) => {
+      const detectionTime = dayjs(detection.timestamp);
+      return (
+        detectionTime.isSameOrAfter(visualisationTimeRange.from) &&
+        detectionTime.isBefore(visualisationTimeRange.to)
+      );
+    });
+  }, [allDetections, visualisationTimeRange.from.valueOf(), visualisationTimeRange.to.valueOf()]);
 
   const prefetch = (vars?: {
     period?: { from: dayjs.Dayjs; to: dayjs.Dayjs };
@@ -142,7 +151,8 @@ export function useDetections(species: string[]) {
   };
 
   return {
-    data: filteredDetections,
+    allDetections,
+    activeDetections,
     loading,
     error,
     prefetch,

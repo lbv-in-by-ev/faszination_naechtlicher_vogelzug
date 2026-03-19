@@ -61,7 +61,15 @@ const disabledRangeDate = (
   return false;
 };
 
-const Timeline: React.FC = () => {
+interface TimelineProps {
+  showAllDetections: boolean;
+  onToggleAllDetections: (value: boolean) => void;
+}
+
+const Timeline: React.FC<TimelineProps> = ({
+  showAllDetections,
+  onToggleAllDetections,
+}) => {
   const {
     dateRange,
     visualisationTimeRange,
@@ -157,7 +165,16 @@ const Timeline: React.FC = () => {
             popup: "text-black",
           }}
         />
-        <div className="ml-auto">
+        <div className="ml-auto flex gap-4 items-center">
+          <Checkbox
+            className="text-white"
+            checked={showAllDetections}
+            onChange={(e) => {
+              onToggleAllDetections(e.target.checked);
+            }}
+          >
+            Alle Detektionen
+          </Checkbox>
           <Checkbox
             className="text-white"
             checked={isNightOnly}

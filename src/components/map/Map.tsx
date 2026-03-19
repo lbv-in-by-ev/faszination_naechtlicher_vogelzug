@@ -40,20 +40,25 @@ const MARKER_CLASSES = `
 `;
 
 interface MapProps {
-  detections?: DetectionItemFragment[];
+  allDetections?: DetectionItemFragment[];
+  activeDetections?: DetectionItemFragment[];
   selectedSpecies: string[];
   speciesColors: Record<string, string>;
+  showAllDetections: boolean;
 }
 
 const Map: React.FC<MapProps> = ({
-  detections,
+  allDetections,
+  activeDetections,
   selectedSpecies,
   speciesColors,
+  showAllDetections,
 }) => {
   const { visualisationTimeRange } = useDatesContext();
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const clusterIndices = useRef<Record<string, Supercluster>>({});
+  const allClusterIndices = useRef<Record<string, Supercluster>>({});
   const fromDate = visualisationTimeRange.from.toDate();
   const { setMap } = useMapContext();
   const markersRef = useRef<maplibregl.Marker[]>([]);
@@ -63,8 +68,9 @@ const Map: React.FC<MapProps> = ({
     const map = mapRef.current;
     if (!map) return;
 
-    const source = map.getSource<GeoJSONSource>("detections-aggregated");
-    if (!source) return;
+    const activeSource = map.getSource<GeoJSONSource>("detections-aggregated");
+    const allSource = map.getSource<GeoJSONSource>("detections-all");
+    if (!activeSource || !allSource) return;
 
     const bounds = map.getBounds().toArray().flat() as [
       number,
@@ -73,18 +79,21 @@ const Map: React.FC<MapProps> = ({
       number,
     ];
     const zoom = Math.round(map.getZoom());
-    const features = getCombinedClusters(clusterIndices.current, bounds, zoom);
 
-    source.setData({
+    activeSource.setData({
       type: "FeatureCollection",
-      features: features,
+      features: getCombinedClusters(clusterIndices.current, bounds, zoom),
+    });
+
+    allSource.setData({
+      type: "FeatureCollection",
+      features: getCombinedClusters(allClusterIndices.current, bounds, zoom),
     });
   }, []);
 
   const updateLayerColors = useCallback(() => {
     const map = mapRef.current;
-    if (!map || !detections) return;
-    if (!map.getLayer("cluster-glow-outer")) return;
+    if (!map?.getLayer("cluster-glow-outer")) return;
 
     const paintExpression = buildColorExpression(
       selectedSpecies,
@@ -92,7 +101,9 @@ const Map: React.FC<MapProps> = ({
     );
     map.setPaintProperty("cluster-glow-outer", "circle-color", paintExpression);
     map.setPaintProperty("cluster-glow-inner", "circle-color", paintExpression);
-  }, [detections, selectedSpecies, speciesColors]);
+    map.setPaintProperty("detections-all-outer", "circle-color", paintExpression);
+    map.setPaintProperty("detections-all-inner", "circle-color", paintExpression);
+  }, [selectedSpecies, speciesColors]);
 
   useEffect(() => {
     if (mapRef.current || !mapContainer.current) return;
@@ -106,6 +117,11 @@ const Map: React.FC<MapProps> = ({
 
     _map.on("load", () => {
       _map.addSource("detections-aggregated", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+
+      _map.addSource("detections-all", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
       });
@@ -241,16 +257,29 @@ const Map: React.FC<MapProps> = ({
   }, [dayPolygon]);
 
   useEffect(() => {
-    if (!detections) return;
-    const features = detectionsToFeatures(detections);
-    clusterIndices.current = createSuperclusterIndices(features);
+    if (!activeDetections) return;
+    clusterIndices.current = createSuperclusterIndices(detectionsToFeatures(activeDetections));
     updateMapSource();
     updateLayerColors();
-  }, [detections, updateMapSource, updateLayerColors]);
+  }, [activeDetections, updateMapSource, updateLayerColors]);
+
+  useEffect(() => {
+    if (!allDetections) return;
+    allClusterIndices.current = createSuperclusterIndices(detectionsToFeatures(allDetections));
+    updateMapSource();
+  }, [allDetections, updateMapSource]);
 
   useEffect(() => {
     updateLayerColors();
   }, [selectedSpecies, speciesColors, updateLayerColors]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map?.getLayer("detections-all-outer")) return;
+    const visibility = showAllDetections ? "visible" : "none";
+    map.setLayoutProperty("detections-all-outer", "visibility", visibility);
+    map.setLayoutProperty("detections-all-inner", "visibility", visibility);
+  }, [showAllDetections]);
 
   return (
     <div
