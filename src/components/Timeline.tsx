@@ -325,6 +325,18 @@ const Timeline: React.FC<TimelineProps> = ({
     return { bin, total, startTime, speciesNames };
   }, [hoveredBin, histogramBins, totalMinutes, virtualMinuteToTime]);
 
+  const [gearHint, setGearHint] = useState(
+    () => !localStorage.getItem("gear-clicked"),
+  );
+
+  const handleGearClick = useCallback(() => {
+    setGearHint(false);
+    localStorage.setItem("gear-clicked", "1");
+    onToggleOptions();
+  }, [onToggleOptions]);
+
+  const gearPulse = gearHint ? "gear-pulse" : "";
+
   return (
     <div className="bg-black border-t border-t-white text-white p-4 compact:pt-2 relative">
       {/* Row 1: buttons + datepicker + gear (mobile: calendar above buttons) */}
@@ -363,8 +375,8 @@ const Timeline: React.FC<TimelineProps> = ({
           {/* Mobile-only gear button */}
           <button
             type="button"
-            className="compact:inline-block hidden p-2 py-1 border border-white compact:order-2"
-            onClick={onToggleOptions}
+            className={`compact:inline-block hidden p-2 py-1 border border-white compact:order-2 ${gearPulse}`}
+            onClick={handleGearClick}
             title="Optionen"
           >
             <SettingOutlined className="text-white" />
@@ -409,8 +421,8 @@ const Timeline: React.FC<TimelineProps> = ({
         <div className="ml-auto compact:hidden">
           <button
             type="button"
-            className="p-2 py-1 border border-white"
-            onClick={onToggleOptions}
+            className={`p-2 py-1 border border-white ${gearPulse}`}
+            onClick={handleGearClick}
             title="Optionen"
           >
             <SettingOutlined className="text-white" />
@@ -452,6 +464,11 @@ const Timeline: React.FC<TimelineProps> = ({
               clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
               cursor: pointer;
             }
+            @keyframes gear-pulse {
+              0%, 100% { box-shadow: 0 0 4px rgba(255,255,255,0.2); border-color: #fff; }
+              50% { box-shadow: 0 0 14px 4px rgba(0,104,180,0.6); border-color: rgb(0,104,180); }
+            }
+            .gear-pulse { animation: gear-pulse 2s ease-in-out infinite; }
             @media (max-width: 639px), (max-height: 639px) {
               .timeline-datepicker-popup {
                 left: 50% !important;
