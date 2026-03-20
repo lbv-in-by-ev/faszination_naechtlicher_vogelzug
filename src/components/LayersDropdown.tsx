@@ -1,6 +1,7 @@
 import { Checkbox, Collapse } from "antd";
 import { useEffect, useState } from "react";
 import { useMapContext } from "./MapProvider.tsx";
+import { useDatesContext } from "./DatesProvider.tsx";
 
 const layers = [
   {
@@ -20,9 +21,30 @@ const layers = [
   // },
 ];
 
-const LayersDropdown = () => {
+interface LayersDropdownProps {
+  showAllDetections: boolean;
+  onToggleAllDetections: (value: boolean) => void;
+  clusterActive: boolean;
+  onToggleClusterActive: (value: boolean) => void;
+  clusterAll: boolean;
+  onToggleClusterAll: (value: boolean) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+const LayersDropdown: React.FC<LayersDropdownProps> = ({
+  showAllDetections,
+  onToggleAllDetections,
+  clusterActive,
+  onToggleClusterActive,
+  clusterAll,
+  onToggleClusterAll,
+  open,
+  onOpenChange,
+}) => {
   const [activeLayers, setActiveLayers] = useState<string[]>([]);
   const { map } = useMapContext();
+  const { isNightOnly, setIsNightOnly } = useDatesContext();
 
   useEffect(() => {
     if (!map) return;
@@ -45,17 +67,48 @@ const LayersDropdown = () => {
   return (
     <Collapse
       collapsible="header"
+      activeKey={open ? ["1"] : []}
+      onChange={(keys) => { onOpenChange(keys.includes("1")); }}
       className="z-10 bg-light rounded-xs w-68 text-sm pointer-events-auto"
       classNames={{ body: "max-h-96 overflow-auto", header: "border-b-0" }}
       items={[
         {
           key: "1",
-          label: <h2 className="text-base">Informationsschichten</h2>,
+          label: <h2 className="text-base">Optionen</h2>,
           children: (
             <>
-              <p className="mb-4">
-                Wählen Sie die Informationsschicht aus, die Sie sehen möchten.
-              </p>
+              <div className="flex flex-col gap-3 mb-4">
+                <Checkbox
+                  checked={isNightOnly}
+                  classNames={{ icon: "text-amber-400" }}
+                  onChange={(e) => { setIsNightOnly(e.target.checked); }}
+                >
+                  Nur Nächte zeigen
+                </Checkbox>
+                <Checkbox
+                  checked={clusterActive}
+                  classNames={{ icon: "text-amber-400" }}
+                  onChange={(e) => { onToggleClusterActive(e.target.checked); }}
+                >
+                  Aktive Detektionen gruppieren
+                </Checkbox>
+                <Checkbox
+                  checked={showAllDetections}
+                  classNames={{ icon: "text-amber-400" }}
+                  onChange={(e) => { onToggleAllDetections(e.target.checked); }}
+                >
+                  Alle Detektionen im ausgewählten Zeitraum
+                </Checkbox>
+                <Checkbox
+                  checked={clusterAll}
+                  classNames={{ icon: "text-amber-400" }}
+                  onChange={(e) => { onToggleClusterAll(e.target.checked); }}
+                >
+                  Alle Detektionen gruppieren
+                </Checkbox>
+              </div>
+
+              <h3 className="text-sm font-medium mb-2">Informationsschichten</h3>
 
               <ul className="list-none">
                 {layers.map((layer) => {

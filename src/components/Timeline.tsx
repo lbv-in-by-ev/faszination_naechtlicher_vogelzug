@@ -74,6 +74,7 @@ interface TimelineProps {
   allDetections: DetectionItemFragment[];
   speciesColors: Record<string, string>;
   speciesLabels: Record<string, string>;
+  onToggleOptions: () => void;
 }
 
 const Timeline: React.FC<TimelineProps> = ({
@@ -86,6 +87,7 @@ const Timeline: React.FC<TimelineProps> = ({
   allDetections,
   speciesColors,
   speciesLabels,
+  onToggleOptions,
 }) => {
   const {
     dateRange,
@@ -410,8 +412,8 @@ const Timeline: React.FC<TimelineProps> = ({
           <button
             type="button"
             className="p-2 py-1 border border-white/40 hover:border-white transition-colors"
-            onClick={() => { setShowOptions((v) => !v); }}
-            title="Einstellungen"
+            onClick={onToggleOptions}
+            title="Optionen"
           >
             <SettingOutlined className="text-white" />
           </button>

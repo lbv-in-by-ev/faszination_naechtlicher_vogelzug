@@ -20,6 +20,7 @@ function App() {
   const [showAllDetections, setShowAllDetections] = useState(false);
   const [clusterActive, setClusterActive] = useState(false);
   const [clusterAll, setClusterAll] = useState(false);
+  const [optionsOpen, setOptionsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -68,7 +69,16 @@ function App() {
             onSpeciesLabelsChange={setSpeciesLabels}
             speciesColors={speciesColors}
           />
-          <LayersDropdown />
+          <LayersDropdown
+            showAllDetections={showAllDetections}
+            onToggleAllDetections={setShowAllDetections}
+            clusterActive={clusterActive}
+            onToggleClusterActive={setClusterActive}
+            clusterAll={clusterAll}
+            onToggleClusterAll={setClusterAll}
+            open={optionsOpen}
+            onOpenChange={setOptionsOpen}
+          />
         </div>
         <button
           type="button"
@@ -102,6 +112,7 @@ function App() {
         allDetections={filteredAllDetections}
         speciesColors={speciesColors}
         speciesLabels={speciesLabels}
+        onToggleOptions={() => { setOptionsOpen((v) => !v); }}
       />
     </div>
   );
