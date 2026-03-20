@@ -270,7 +270,7 @@ const Map: React.FC<MapProps> = ({
             "fill-antialias": false,
           },
         },
-        "cluster-glow-inner",
+        "detections-all-outer",
       );
     } else {
       map.getSource<GeoJSONSource>(sourceId)?.setData(dayPolygon);

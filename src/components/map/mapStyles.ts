@@ -1,5 +1,36 @@
 export const layers = [
   {
+    id: "light-pollution-layer",
+    type: "raster",
+    source: "light-pollution",
+    layout: {
+      visibility: "none",
+    },
+    paint: {
+      "raster-opacity": 0.3,
+    },
+  },
+  {
+    id: "lfu-laerm-strassen-lden-2022-layer",
+    type: "raster",
+    source: "lfu-laerm-strassen-lden-2022",
+    layout: {
+      visibility: "none",
+    },
+    paint: {
+      "raster-opacity": 0.6,
+    },
+  },
+  {
+    id: "lfu-hauptstrassen-lden-2022-layer",
+    type: "raster",
+    source: "lfu-hauptstrassen-lden-2022",
+    layout: {
+      visibility: "none",
+    },
+    paint: { "raster-opacity": 0.6 },
+  },
+  {
     id: "detections-all-outer",
     type: "circle",
     source: "detections-all",
@@ -75,36 +106,5 @@ export const layers = [
       "circle-opacity": 0.5,
       "circle-blur": 1.5,
     },
-  },
-  {
-    id: "light-pollution-layer",
-    type: "raster",
-    source: "light-pollution",
-    layout: {
-      visibility: "none",
-    },
-    paint: {
-      "raster-opacity": 0.3,
-    },
-  },
-  {
-    id: "lfu-laerm-strassen-lden-2022-layer",
-    type: "raster",
-    source: "lfu-laerm-strassen-lden-2022",
-    layout: {
-      visibility: "none",
-    },
-    paint: {
-      "raster-opacity": 0.6,
-    },
-  },
-  {
-    id: "lfu-hauptstrassen-lden-2022-layer",
-    type: "raster",
-    source: "lfu-hauptstrassen-lden-2022",
-    layout: {
-      visibility: "none",
-    },
-    paint: { "raster-opacity": 0.6 },
   },
 ];
