@@ -87,57 +87,6 @@ function App() {
           />
         </div>
 
-        {/* Mobile modal */}
-        {mobileMenuOpen && (
-          <div className="fixed inset-0 z-50 bg-black/90 flex flex-col">
-            <div className="flex items-end justify-between border-b border-white/10">
-              <div className="flex">
-                <button
-                  type="button"
-                  className={`px-5 pt-4 pb-3 text-sm font-medium transition-colors ${mobileTab === "species" ? "text-white border-b-2 border-white bg-white/5" : "text-white/40"}`}
-                  onClick={() => setMobileTab("species")}
-                >
-                  Vogelarten
-                </button>
-                <button
-                  type="button"
-                  className={`px-5 pt-4 pb-3 text-sm font-medium transition-colors ${mobileTab === "options" ? "text-white border-b-2 border-white bg-white/5" : "text-white/40"}`}
-                  onClick={() => setMobileTab("options")}
-                >
-                  Optionen
-                </button>
-              </div>
-              <button
-                type="button"
-                className="p-4 text-white/40 hover:text-white transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <CloseOutlined />
-              </button>
-            </div>
-            <div className="flex-1 overflow-auto p-4 text-white">
-              {mobileTab === "species" ? (
-                <SpeciesDropdown
-                  selectedSpecies={selectedSpecies}
-                  onChangeSpecies={setSelectedSpecies}
-                  onSpeciesLabelsChange={setSpeciesLabels}
-                  speciesColors={speciesColors}
-                  mode="plain"
-                />
-              ) : (
-                <LayersDropdown
-                  showAllDetections={showAllDetections}
-                  onToggleAllDetections={setShowAllDetections}
-                  clusterActive={clusterActive}
-                  onToggleClusterActive={setClusterActive}
-                  clusterAll={clusterAll}
-                  onToggleClusterAll={setClusterAll}
-                  mode="plain"
-                />
-              )}
-            </div>
-          </div>
-        )}
         <button
           type="button"
           onClick={toggleFullscreen}
@@ -160,6 +109,57 @@ function App() {
           clusterAll={clusterAll}
         />
       </div>
+      {/* Mobile modal — direct child of containerRef so absolute fills the app, not the viewport */}
+      {mobileMenuOpen && (
+        <div className="absolute inset-0 z-50 bg-black/90 flex flex-col">
+          <div className="flex items-end justify-between border-b border-white/10">
+            <div className="flex">
+              <button
+                type="button"
+                className={`px-5 pt-4 pb-3 text-sm font-medium transition-colors ${mobileTab === "species" ? "text-white border-b-2 border-white bg-white/5" : "text-white/40"}`}
+                onClick={() => setMobileTab("species")}
+              >
+                Vogelarten
+              </button>
+              <button
+                type="button"
+                className={`px-5 pt-4 pb-3 text-sm font-medium transition-colors ${mobileTab === "options" ? "text-white border-b-2 border-white bg-white/5" : "text-white/40"}`}
+                onClick={() => setMobileTab("options")}
+              >
+                Optionen
+              </button>
+            </div>
+            <button
+              type="button"
+              className="p-4 text-white/40 hover:text-white transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <CloseOutlined />
+            </button>
+          </div>
+          <div className="flex-1 overflow-auto p-4 text-white">
+            {mobileTab === "species" ? (
+              <SpeciesDropdown
+                selectedSpecies={selectedSpecies}
+                onChangeSpecies={setSelectedSpecies}
+                onSpeciesLabelsChange={setSpeciesLabels}
+                speciesColors={speciesColors}
+                mode="plain"
+              />
+            ) : (
+              <LayersDropdown
+                showAllDetections={showAllDetections}
+                onToggleAllDetections={setShowAllDetections}
+                clusterActive={clusterActive}
+                onToggleClusterActive={setClusterActive}
+                clusterAll={clusterAll}
+                onToggleClusterAll={setClusterAll}
+                mode="plain"
+              />
+            )}
+          </div>
+        </div>
+      )}
       <Timeline
         allDetections={filteredAllDetections}
         speciesColors={speciesColors}
