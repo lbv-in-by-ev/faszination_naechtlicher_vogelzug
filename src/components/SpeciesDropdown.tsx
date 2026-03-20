@@ -23,8 +23,9 @@ interface Props {
   onChangeSpecies: (species: string[]) => void;
   onSpeciesLabelsChange: (labels: Record<string, string>) => void;
   speciesColors: Record<string, string>;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  mode?: "collapse" | "plain";
 }
 
 interface AutocompleteOption {
@@ -42,6 +43,7 @@ const SpeciesDropdown = ({
   speciesColors,
   open,
   onOpenChange,
+  mode = "collapse",
 }: Props) => {
   const [searchValue, setSearchValue] = useState("");
   const [speciesMap, setSpeciesMap] = useState<Record<string, Species>>({});
@@ -149,85 +151,91 @@ const SpeciesDropdown = ({
 
   const isMaxSelected = selectedSpecies.length >= MAX_SPECIES;
 
+  const content = (
+    <>
+      <p className="mb-4">Wählen Sie bis zu drei Arten aus.</p>
+
+      <Spin
+        indicator={<LoadingOutlined />}
+        spinning={loading || loadingAvailability}
+        className="p-4"
+      >
+        <div className="mb-4">
+          <label
+            className="block text-sm font-medium mb-1"
+            htmlFor="searchSpecies"
+          >
+            Vogelart suchen
+          </label>
+          <AutoComplete
+            value={searchValue}
+            options={searchOptions}
+            onSelect={onSelectSearch}
+            onChange={handleSearch}
+            id="searchSpecies"
+            placeholder="Name eingeben..."
+            className="w-full"
+            disabled={isMaxSelected}
+            notFoundContent={
+              loadingSearch ? (
+                <div className="p-2 text-center">
+                  <Spin size="small" />
+                </div>
+              ) : searchValue.length < 2 ? (
+                <div className="p-2 text-xs text-gray-500">
+                  Mindestens 2 Zeichen eingeben.
+                </div>
+              ) : searchValue.length >= 2 &&
+                searchOptions.length === 0 ? (
+                <div className="p-2 text-xs text-gray-500">
+                  Keine Ergebnisse gefunden.
+                </div>
+              ) : null
+            }
+          />
+          {isMaxSelected && (
+            <p className="mt-1 text-xs text-gray-500">
+              Entfernen Sie eine Art, um eine neue hinzuzufügen.
+            </p>
+          )}
+        </div>
+
+        <ul className="list-none mb-4">
+          {selectedSpecies.map((id) => {
+            const species = speciesMap[id];
+            if (!species) return null;
+            return (
+              <li key={id} className="mb-4 last:mb-0">
+                <SpeciesItem
+                  species={species}
+                  speciesColors={speciesColors}
+                  onRemove={() => onRemoveSpecies(id)}
+                  disabled={!availability[id]}
+                />
+              </li>
+            );
+          })}
+        </ul>
+      </Spin>
+    </>
+  );
+
+  if (mode === "plain") {
+    return <div className="text-sm">{content}</div>;
+  }
+
   return (
     <Collapse
       collapsible="header"
       className="bg-light rounded-xs w-68 text-sm pointer-events-auto"
       activeKey={open ? ["1"] : []}
-      onChange={(keys) => { onOpenChange(keys.includes("1")); }}
-      classNames={{ body: "max-h-[32rem] overflow-auto pb-4", header: "border-b-0" }}
+      onChange={(keys) => { onOpenChange?.(keys.includes("1")); }}
+      classNames={{ body: "max-h-[min(36rem,calc(100dvh-5rem))] overflow-auto overscroll-contain pb-4", header: "border-b-0" }}
       items={[
         {
           key: "1",
           label: <h2 className="text-base">Vogelarten</h2>,
-          children: (
-            <>
-              <p className="mb-4">Wählen Sie bis zu drei Arten aus.</p>
-
-              <Spin
-                indicator={<LoadingOutlined />}
-                spinning={loading || loadingAvailability}
-                className="p-4"
-              >
-                <div className="mb-4">
-                  <label
-                    className="block text-sm font-medium mb-1"
-                    htmlFor="searchSpecies"
-                  >
-                    Vogelart suchen
-                  </label>
-                  <AutoComplete
-                    value={searchValue}
-                    options={searchOptions}
-                    onSelect={onSelectSearch}
-                    onChange={handleSearch}
-                    id="searchSpecies"
-                    placeholder="Name eingeben..."
-                    className="w-full"
-                    disabled={isMaxSelected}
-                    notFoundContent={
-                      loadingSearch ? (
-                        <div className="p-2 text-center">
-                          <Spin size="small" />
-                        </div>
-                      ) : searchValue.length < 2 ? (
-                        <div className="p-2 text-xs text-gray-500">
-                          Mindestens 2 Zeichen eingeben.
-                        </div>
-                      ) : searchValue.length >= 2 &&
-                        searchOptions.length === 0 ? (
-                        <div className="p-2 text-xs text-gray-500">
-                          Keine Ergebnisse gefunden.
-                        </div>
-                      ) : null
-                    }
-                  />
-                  {isMaxSelected && (
-                    <p className="mt-1 text-xs text-gray-500">
-                      Entfernen Sie eine Art, um eine neue hinzuzufügen.
-                    </p>
-                  )}
-                </div>
-
-                <ul className="list-none mb-4">
-                  {selectedSpecies.map((id) => {
-                    const species = speciesMap[id];
-                    if (!species) return null;
-                    return (
-                      <li key={id} className="mb-4 last:mb-0">
-                        <SpeciesItem
-                          species={species}
-                          speciesColors={speciesColors}
-                          onRemove={() => onRemoveSpecies(id)}
-                          disabled={!availability[id]}
-                        />
-                      </li>
-                    );
-                  })}
-                </ul>
-              </Spin>
-            </>
-          ),
+          children: content,
         },
       ]}
     />

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { DetectionItemFragment } from "../gql/graphql.ts";
-import { Checkbox, DatePicker } from "antd";
+import { DatePicker } from "antd";
 import dayjs, { type Dayjs } from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
@@ -65,12 +65,6 @@ const disabledRangeDate = (
 };
 
 interface TimelineProps {
-  showAllDetections: boolean;
-  onToggleAllDetections: (value: boolean) => void;
-  clusterActive: boolean;
-  onToggleClusterActive: (value: boolean) => void;
-  clusterAll: boolean;
-  onToggleClusterAll: (value: boolean) => void;
   allDetections: DetectionItemFragment[];
   speciesColors: Record<string, string>;
   speciesLabels: Record<string, string>;
@@ -78,12 +72,6 @@ interface TimelineProps {
 }
 
 const Timeline: React.FC<TimelineProps> = ({
-  showAllDetections,
-  onToggleAllDetections,
-  clusterActive,
-  onToggleClusterActive,
-  clusterAll,
-  onToggleClusterAll,
   allDetections,
   speciesColors,
   speciesLabels,
@@ -95,11 +83,9 @@ const Timeline: React.FC<TimelineProps> = ({
     timeSegments,
     totalMinutes,
     currentSliderMinute,
-    isNightOnly,
     isPlaying,
     setSliderMinute,
     handleDateRangeChange,
-    setIsNightOnly,
     togglePlay,
   } = useDatesContext();
   const throttleMs = 100;
@@ -266,8 +252,6 @@ const Timeline: React.FC<TimelineProps> = ({
 
   // --- Histogram interaction ---
 
-  const [showOptions, setShowOptions] = useState(false);
-
   const [hoveredBin, setHoveredBin] = useState<{
     binIndex: number;
     x: number;
@@ -342,12 +326,14 @@ const Timeline: React.FC<TimelineProps> = ({
   }, [hoveredBin, histogramBins, totalMinutes, virtualMinuteToTime]);
 
   return (
-    <div className="bg-black border-t border-t-white text-white p-4 relative">
-      <div className="my-2 flex">
-        <div className="mr-auto">
+    <div className="bg-black border-t border-t-white text-white p-4 compact:pt-2 relative">
+      {/* Row 1: buttons + datepicker + gear (mobile: calendar above buttons) */}
+      <div className="my-2 flex compact:flex-wrap compact:gap-y-4">
+        {/* Mobile layout: play left, back/forward center, gear right */}
+        <div className="mr-auto compact:contents">
           <button
             type="button"
-            className="p-2 py-1 border border-white mr-10"
+            className="p-2 py-1 border border-white mr-10 compact:mr-auto compact:order-2"
             onClick={() => {
               togglePlay();
             }}
@@ -356,7 +342,7 @@ const Timeline: React.FC<TimelineProps> = ({
           </button>
           <button
             type="button"
-            className="p-2 py-1 border border-white mr-6"
+            className="p-2 py-1 border border-white mr-6 compact:mr-2 compact:order-2"
             disabled={currentSliderMinute === 1}
             onClick={() => {
               handleStepChange(-1);
@@ -367,132 +353,74 @@ const Timeline: React.FC<TimelineProps> = ({
           <button
             type="button"
             disabled={currentSliderMinute === totalMinutes}
-            className="p-2 py-1 border border-white"
+            className="p-2 py-1 border border-white compact:mr-auto compact:order-2"
             onClick={() => {
               handleStepChange(1);
             }}
           >
             <CaretRightOutlined className="text-white" />
           </button>
-        </div>
-        <RangePicker
-          showTime
-          format="DD.MM.YYYY HH:mm"
-          placement="topLeft"
-          separator={<RightOutlined />}
-          className="[&.ant-picker-separator]:[--ant-color-text-quaternary:#fff]"
-          placeholder={["Von", "Bis"]}
-          defaultValue={[dayjs(dateRange.from), dayjs(dateRange.to)]}
-          suffixIcon={false}
-          maxLength={31}
-          maxDate={dayjs().startOf("hour")}
-          disabledTime={disabledDateTime}
-          disabledDate={disabledRangeDate}
-          hideDisabledOptions
-          prefix={<CalendarOutlined />}
-          allowClear={false}
-          onChange={(dates) => {
-            if (dates?.[0] && dates[1]) {
-              handleDateRangeChange({
-                from: dates[0].startOf("minute"),
-                to: dates[1].startOf("minute"),
-              });
-            }
-          }}
-          popupStyle={{ position: "fixed" }}
-          classNames={{
-            root: "border-0 border-b rounded-none border-white bg-black text-white w-auto cursor-pointer p-0 pb-1",
-            input: "text-white placeholder:text-white w-[13.95ch]",
-            prefix: "text-white",
-            suffix: "hidden",
-            popup: "text-black",
-          }}
-        />
-        <div className="ml-auto">
+          {/* Mobile-only gear button */}
           <button
             type="button"
-            className="p-2 py-1 border border-white/40 hover:border-white transition-colors"
+            className="compact:inline-block hidden p-2 py-1 border border-white compact:order-2"
             onClick={onToggleOptions}
             title="Optionen"
           >
             <SettingOutlined className="text-white" />
           </button>
         </div>
-        {showOptions && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-            onClick={() => { setShowOptions(false); }}
+        <div className="compact:w-full compact:order-1 compact:flex compact:justify-center">
+          <RangePicker
+            showTime
+            format="DD.MM.YYYY HH:mm"
+            placement="topLeft"
+            separator={<RightOutlined />}
+            className="[&.ant-picker-separator]:[--ant-color-text-quaternary:#fff]"
+            placeholder={["Von", "Bis"]}
+            defaultValue={[dayjs(dateRange.from), dayjs(dateRange.to)]}
+            suffixIcon={false}
+            maxLength={31}
+            maxDate={dayjs().startOf("hour")}
+            disabledTime={disabledDateTime}
+            disabledDate={disabledRangeDate}
+            hideDisabledOptions
+            prefix={<CalendarOutlined />}
+            allowClear={false}
+            onChange={(dates) => {
+              if (dates?.[0] && dates[1]) {
+                handleDateRangeChange({
+                  from: dates[0].startOf("minute"),
+                  to: dates[1].startOf("minute"),
+                });
+              }
+            }}
+            popupStyle={{ position: "fixed" }}
+            classNames={{
+              root: "border-0 border-b rounded-none border-white bg-black text-white w-auto cursor-pointer p-0 pb-1",
+              input: "text-white placeholder:text-white w-[13.95ch]",
+              prefix: "text-white",
+              suffix: "hidden",
+              popup: "text-black timeline-datepicker-popup",
+            }}
+          />
+        </div>
+        {/* Desktop-only gear button */}
+        <div className="ml-auto compact:hidden">
+          <button
+            type="button"
+            className="p-2 py-1 border border-white"
+            onClick={onToggleOptions}
+            title="Optionen"
           >
-            <div
-              className="rounded-2xl w-[420px] overflow-hidden"
-              style={{
-                background: "linear-gradient(180deg, #1e1e24 0%, #16161b 100%)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                boxShadow: "0 25px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04) inset",
-              }}
-              onClick={(e) => { e.stopPropagation(); }}
-            >
-              <div
-                className="flex items-center justify-between"
-                style={{
-                  padding: "20px 28px 16px",
-                  borderBottom: "1px solid rgba(255,255,255,0.06)",
-                }}
-              >
-                <span
-                  className="font-semibold tracking-wide"
-                  style={{ color: "rgba(255,255,255,0.85)", fontSize: "15px", letterSpacing: "0.03em" }}
-                >
-                  Einstellungen
-                </span>
-                <button
-                  type="button"
-                  className="transition-colors leading-none"
-                  style={{ color: "rgba(255,255,255,0.3)", fontSize: "18px" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.8)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.3)"; }}
-                  onClick={() => { setShowOptions(false); }}
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="flex flex-col" style={{ padding: "24px 28px 28px", gap: "20px" }}>
-                <Checkbox
-                  className="text-white"
-                  checked={isNightOnly}
-                  onChange={(e) => { setIsNightOnly(e.target.checked); }}
-                >
-                  Nur Nächte zeigen
-                </Checkbox>
-                <Checkbox
-                  className="text-white"
-                  checked={clusterActive}
-                  onChange={(e) => { onToggleClusterActive(e.target.checked); }}
-                >
-                  Aktive Detektionen gruppieren
-                </Checkbox>
-                <Checkbox
-                  className="text-white"
-                  checked={showAllDetections}
-                  onChange={(e) => { onToggleAllDetections(e.target.checked); }}
-                >
-                  Alle Detektionen im ausgewählten Zeitraum
-                </Checkbox>
-                <Checkbox
-                  className="text-white"
-                  checked={clusterAll}
-                  onChange={(e) => { onToggleClusterAll(e.target.checked); }}
-                >
-                  Alle Detektionen gruppieren
-                </Checkbox>
-              </div>
-            </div>
-          </div>
-        )}
+            <SettingOutlined className="text-white" />
+          </button>
+        </div>
       </div>
 
-      <div className="flex items-center mt-2">
-        <div className="grow mr-4 flex flex-col">
+      {/* Histogram + slider + time */}
+      <div className="flex items-center mt-2 compact:flex-col">
+        <div className="grow mr-4 flex flex-col compact:mr-0 compact:w-full">
           <div style={{ padding: "0 6px" }}>
             <canvas
               ref={histogramRef}
@@ -524,6 +452,14 @@ const Timeline: React.FC<TimelineProps> = ({
               clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
               cursor: pointer;
             }
+            @media (max-width: 639px), (max-height: 639px) {
+              .timeline-datepicker-popup {
+                left: 50% !important;
+                right: auto !important;
+                transform: translateX(-50%) scale(0.92) !important;
+                transform-origin: top center;
+              }
+            }
           `}</style>
           <input
             type="range"
@@ -535,7 +471,7 @@ const Timeline: React.FC<TimelineProps> = ({
             onChange={(e) => { handleSliderChange(Math.round(Number(e.target.value))); }}
           />
         </div>
-        <p className="whitespace-nowrap min-w-fit">
+        <p className="whitespace-nowrap min-w-fit compact:text-center compact:mt-2 compact:text-sm">
           {visualisationTimeRange.from.format("DD.MM.YYYY HH:mm")} -{" "}
           {visualisationTimeRange.to.format("HH:mm")}
         </p>

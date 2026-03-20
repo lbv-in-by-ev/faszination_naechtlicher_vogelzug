@@ -2,6 +2,13 @@
 
 @import "tailwindcss";
 
+/* Mobile: either dimension < 640px (portrait phones + landscape phones) */
+@custom-variant compact {
+  @media (max-width: 639px), (max-height: 639px) {
+    @slot;
+  }
+}
+
 /*
  * Shadow DOM @property fix
  *

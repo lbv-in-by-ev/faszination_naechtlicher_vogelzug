@@ -28,8 +28,9 @@ interface LayersDropdownProps {
   onToggleClusterActive: (value: boolean) => void;
   clusterAll: boolean;
   onToggleClusterAll: (value: boolean) => void;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  mode?: "collapse" | "plain";
 }
 
 const LayersDropdown: React.FC<LayersDropdownProps> = ({
@@ -41,6 +42,7 @@ const LayersDropdown: React.FC<LayersDropdownProps> = ({
   onToggleClusterAll,
   open,
   onOpenChange,
+  mode = "collapse",
 }) => {
   const [activeLayers, setActiveLayers] = useState<string[]>([]);
   const { map } = useMapContext();
@@ -64,78 +66,89 @@ const LayersDropdown: React.FC<LayersDropdownProps> = ({
     });
   }, [map, activeLayers]);
 
+  const content = (
+    <>
+      <div className="flex flex-col gap-3 mb-4">
+        <Checkbox
+          checked={isNightOnly}
+          className={mode === "plain" ? "text-white" : ""}
+          classNames={{ icon: "text-amber-400" }}
+          onChange={(e) => { setIsNightOnly(e.target.checked); }}
+        >
+          Nur Nächte zeigen
+        </Checkbox>
+        <Checkbox
+          checked={clusterActive}
+          className={mode === "plain" ? "text-white" : ""}
+          classNames={{ icon: "text-amber-400" }}
+          onChange={(e) => { onToggleClusterActive(e.target.checked); }}
+        >
+          Aktive Detektionen gruppieren
+        </Checkbox>
+        <Checkbox
+          checked={showAllDetections}
+          className={mode === "plain" ? "text-white" : ""}
+          classNames={{ icon: "text-amber-400" }}
+          onChange={(e) => { onToggleAllDetections(e.target.checked); }}
+        >
+          Alle Detektionen im ausgewählten Zeitraum
+        </Checkbox>
+        <Checkbox
+          checked={clusterAll}
+          className={mode === "plain" ? "text-white" : ""}
+          classNames={{ icon: "text-amber-400" }}
+          onChange={(e) => { onToggleClusterAll(e.target.checked); }}
+        >
+          Alle Detektionen gruppieren
+        </Checkbox>
+      </div>
+
+      <h3 className="text-sm font-medium mb-2">Informationsschichten</h3>
+
+      <ul className="list-none">
+        {layers.map((layer) => {
+          const isSelected = activeLayers.includes(layer.label);
+          return (
+            <li key={layer.label} className={`mb-2 last:mb-0 `}>
+              <Checkbox
+                checked={isSelected}
+                className={mode === "plain" ? "text-white" : ""}
+          classNames={{ icon: "text-amber-400" }}
+                onChange={() => {
+                  if (isSelected) {
+                    setActiveLayers(
+                      activeLayers.filter((l) => l !== layer.label),
+                    );
+                  } else {
+                    setActiveLayers([...activeLayers, layer.label]);
+                  }
+                }}
+              >
+                {layer.label}
+              </Checkbox>
+            </li>
+          );
+        })}
+      </ul>
+    </>
+  );
+
+  if (mode === "plain") {
+    return <div className="text-sm">{content}</div>;
+  }
+
   return (
     <Collapse
       collapsible="header"
       activeKey={open ? ["1"] : []}
-      onChange={(keys) => { onOpenChange(keys.includes("1")); }}
+      onChange={(keys) => { onOpenChange?.(keys.includes("1")); }}
       className="z-10 bg-light rounded-xs w-68 text-sm pointer-events-auto"
-      classNames={{ body: "max-h-96 overflow-auto", header: "border-b-0" }}
+      classNames={{ body: "max-h-[min(36rem,calc(100dvh-5rem))] overflow-auto overscroll-contain", header: "border-b-0" }}
       items={[
         {
           key: "1",
           label: <h2 className="text-base">Optionen</h2>,
-          children: (
-            <>
-              <div className="flex flex-col gap-3 mb-4">
-                <Checkbox
-                  checked={isNightOnly}
-                  classNames={{ icon: "text-amber-400" }}
-                  onChange={(e) => { setIsNightOnly(e.target.checked); }}
-                >
-                  Nur Nächte zeigen
-                </Checkbox>
-                <Checkbox
-                  checked={clusterActive}
-                  classNames={{ icon: "text-amber-400" }}
-                  onChange={(e) => { onToggleClusterActive(e.target.checked); }}
-                >
-                  Aktive Detektionen gruppieren
-                </Checkbox>
-                <Checkbox
-                  checked={showAllDetections}
-                  classNames={{ icon: "text-amber-400" }}
-                  onChange={(e) => { onToggleAllDetections(e.target.checked); }}
-                >
-                  Alle Detektionen im ausgewählten Zeitraum
-                </Checkbox>
-                <Checkbox
-                  checked={clusterAll}
-                  classNames={{ icon: "text-amber-400" }}
-                  onChange={(e) => { onToggleClusterAll(e.target.checked); }}
-                >
-                  Alle Detektionen gruppieren
-                </Checkbox>
-              </div>
-
-              <h3 className="text-sm font-medium mb-2">Informationsschichten</h3>
-
-              <ul className="list-none">
-                {layers.map((layer) => {
-                  const isSelected = activeLayers.includes(layer.label);
-                  return (
-                    <li key={layer.label} className={`mb-2 last:mb-0 `}>
-                      <Checkbox
-                        checked={isSelected}
-                        classNames={{ icon: "text-amber-400" }}
-                        onChange={() => {
-                          if (isSelected) {
-                            setActiveLayers(
-                              activeLayers.filter((l) => l !== layer.label),
-                            );
-                          } else {
-                            setActiveLayers([...activeLayers, layer.label]);
-                          }
-                        }}
-                      >
-                        {layer.label}
-                      </Checkbox>
-                    </li>
-                  );
-                })}
-              </ul>
-            </>
-          ),
+          children: content,
         },
       ]}
     />

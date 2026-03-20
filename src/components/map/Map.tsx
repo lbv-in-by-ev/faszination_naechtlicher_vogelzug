@@ -124,6 +124,16 @@ const Map: React.FC<MapProps> = ({
       style: "https://tiles-eu.stadiamaps.com/styles/alidade_smooth_dark.json",
       bounds,
       maplibreLogo: false,
+      attributionControl: false,
+    });
+    _map.addControl(new maplibregl.AttributionControl({ compact: true }));
+
+    // Attribution auto-expands when sources load; collapse it once the map is idle
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    _map.once("idle", () => {
+      mapContainer.current
+        ?.querySelector(".maplibregl-ctrl-attrib")
+        ?.classList.remove("maplibregl-compact-show");
     });
 
     _map.on("load", () => {
