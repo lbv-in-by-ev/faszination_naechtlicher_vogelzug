@@ -23,6 +23,8 @@ interface Props {
   onChangeSpecies: (species: string[]) => void;
   onSpeciesLabelsChange: (labels: Record<string, string>) => void;
   speciesColors: Record<string, string>;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 interface AutocompleteOption {
@@ -38,6 +40,8 @@ const SpeciesDropdown = ({
   onChangeSpecies,
   onSpeciesLabelsChange,
   speciesColors,
+  open,
+  onOpenChange,
 }: Props) => {
   const [searchValue, setSearchValue] = useState("");
   const [speciesMap, setSpeciesMap] = useState<Record<string, Species>>({});
@@ -149,8 +153,9 @@ const SpeciesDropdown = ({
     <Collapse
       collapsible="header"
       className="bg-light rounded-xs w-68 text-sm pointer-events-auto"
+      activeKey={open ? ["1"] : []}
+      onChange={(keys) => { onOpenChange(keys.includes("1")); }}
       classNames={{ body: "max-h-[32rem] overflow-auto pb-4", header: "border-b-0" }}
-      defaultActiveKey={1}
       items={[
         {
           key: "1",

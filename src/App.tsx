@@ -21,6 +21,7 @@ function App() {
   const [clusterActive, setClusterActive] = useState(false);
   const [clusterAll, setClusterAll] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
+  const [speciesOpen, setSpeciesOpen] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -68,6 +69,8 @@ function App() {
             onChangeSpecies={setSelectedSpecies}
             onSpeciesLabelsChange={setSpeciesLabels}
             speciesColors={speciesColors}
+            open={speciesOpen}
+            onOpenChange={setSpeciesOpen}
           />
           <LayersDropdown
             showAllDetections={showAllDetections}
@@ -112,7 +115,15 @@ function App() {
         allDetections={filteredAllDetections}
         speciesColors={speciesColors}
         speciesLabels={speciesLabels}
-        onToggleOptions={() => { setOptionsOpen((v) => !v); }}
+        onToggleOptions={() => {
+          if (speciesOpen && optionsOpen) {
+            setSpeciesOpen(false);
+            setOptionsOpen(false);
+          } else {
+            setSpeciesOpen(true);
+            setOptionsOpen(true);
+          }
+        }}
       />
     </div>
   );
