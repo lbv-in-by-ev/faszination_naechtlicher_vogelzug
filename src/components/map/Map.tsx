@@ -24,7 +24,7 @@ import { INFO_POINTS } from "./infopoints.ts";
 import { InfoPopup } from "../InfoPopup.tsx";
 import { SHOW_DEMO_INFOPOINTS } from "../../config.ts";
 
-const bounds: LngLatBoundsLike = [11.94746, 48.957566, 12.274475, 49.060145];
+const bounds: LngLatBoundsLike = [11.75, 48.85, 12.45, 49.15];
 
 const MARKER_CLASSES = `
   size-5

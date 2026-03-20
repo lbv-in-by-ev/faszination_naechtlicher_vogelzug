@@ -31,7 +31,7 @@ interface AutocompleteOption {
   species: Species;
 }
 
-let scrollContainerInitially = true;
+const MAX_SPECIES = 3;
 
 const SpeciesDropdown = ({
   selectedSpecies,
@@ -40,8 +40,8 @@ const SpeciesDropdown = ({
   speciesColors,
 }: Props) => {
   const [searchValue, setSearchValue] = useState("");
-  const [customSpecies, setCustomSpecies] = useState<Species | null>(null);
-  const collapseRef = useRef<HTMLDivElement | null>(null);
+  const [speciesMap, setSpeciesMap] = useState<Record<string, Species>>({});
+  const initializedRef = useRef(false);
   const { availability, loading: loadingAvailability } =
     useAvailableSpecies(selectedSpecies);
 
@@ -54,23 +54,35 @@ const SpeciesDropdown = ({
       fetchPolicy: "cache-and-network",
     });
 
-  const topThreeSpecies = useMemo(
-    () => [data?.species1, data?.species2, data?.species3].filter(isNotNull),
-    [data?.species1, data?.species2, data?.species3],
-  );
+  // Auto-select hardcoded species on initial load
+  useEffect(() => {
+    if (data && !initializedRef.current) {
+      initializedRef.current = true;
+      const initial = [data.species1, data.species2, data.species3].filter(
+        isNotNull,
+      );
+      const map: Record<string, Species> = {};
+      const ids: string[] = [];
+      for (const s of initial) {
+        map[s.id] = s as Species;
+        ids.push(s.id);
+      }
+      setSpeciesMap((prev) => ({ ...prev, ...map }));
+      onChangeSpecies(ids);
+    }
+  }, [data, onChangeSpecies]);
 
+  // Update labels when selection or species data changes
   useEffect(() => {
     const labels: Record<string, string> = {};
-    for (const s of topThreeSpecies) {
-      if (selectedSpecies.includes(s.id)) {
-        labels[s.id] = getTranslatedSpeciesName(s as Species);
+    for (const id of selectedSpecies) {
+      const species = speciesMap[id];
+      if (species) {
+        labels[id] = getTranslatedSpeciesName(species);
       }
     }
-    if (customSpecies && selectedSpecies.includes(customSpecies.id)) {
-      labels[customSpecies.id] = getTranslatedSpeciesName(customSpecies);
-    }
     onSpeciesLabelsChange(labels);
-  }, [topThreeSpecies, customSpecies, selectedSpecies, onSpeciesLabelsChange]);
+  }, [speciesMap, selectedSpecies, onSpeciesLabelsChange]);
 
   // Debounced search function
   const debouncedSearch = useCallback(
@@ -118,47 +130,26 @@ const SpeciesDropdown = ({
         ),
         species: s as Species,
       }));
-  }, [searchData, selectedSpecies, availability]);
+  }, [searchData, selectedSpecies]);
 
   const onSelectSearch = (_value: string, option: AutocompleteOption) => {
-    if (customSpecies !== null) {
-      // if there is a previous custom species, remove that from the selected
-      // array and add the new species
-      onChangeSpecies([
-        ...selectedSpecies.filter((s) => s !== customSpecies.id),
-        option.species.id,
-      ]);
-    } else {
-      onChangeSpecies([...selectedSpecies, option.species.id]);
-    }
-    setCustomSpecies(option.species);
+    if (selectedSpecies.length >= MAX_SPECIES) return;
+    setSpeciesMap((prev) => ({ ...prev, [option.species.id]: option.species }));
+    onChangeSpecies([...selectedSpecies, option.species.id]);
     setSearchValue("");
-    // scroll down with the useEffect below to notify user of success
-    scrollContainerInitially = true;
   };
 
-  const onClickSpecies = (id: string) => {
-    if (selectedSpecies.includes(id)) {
-      onChangeSpecies(selectedSpecies.filter((s) => s !== id));
-    } else if (selectedSpecies.length < 4) {
-      onChangeSpecies([...selectedSpecies, id]);
-    }
+  const onRemoveSpecies = (id: string) => {
+    onChangeSpecies(selectedSpecies.filter((s) => s !== id));
   };
 
-  useEffect(() => {
-    if (customSpecies && collapseRef.current && scrollContainerInitially) {
-      scrollContainerInitially = false;
-      const container = collapseRef.current.querySelector(".ant-collapse-body");
-      if (container) container.scrollTop = container.scrollHeight;
-    }
-  }, [collapseRef, customSpecies]);
+  const isMaxSelected = selectedSpecies.length >= MAX_SPECIES;
 
   return (
     <Collapse
       collapsible="header"
       className="bg-light rounded-xs w-68 text-sm pointer-events-auto"
-      ref={collapseRef}
-      classNames={{ body: "max-h-96 overflow-auto", header: "border-b-0" }}
+      classNames={{ body: "max-h-[32rem] overflow-auto pb-4", header: "border-b-0" }}
       defaultActiveKey={1}
       items={[
         {
@@ -166,16 +157,14 @@ const SpeciesDropdown = ({
           label: <h2 className="text-base">Vogelarten</h2>,
           children: (
             <>
-              <p className="mb-4">
-                Wählen Sie bis zu 3 Arten aus oder suchen Sie nach einer 4. Art.
-              </p>
+              <p className="mb-4">Wählen Sie bis zu drei Arten aus.</p>
 
               <Spin
                 indicator={<LoadingOutlined />}
                 spinning={loading || loadingAvailability}
                 className="p-4"
               >
-                <div className="my-4">
+                <div className="mb-4">
                   <label
                     className="block text-sm font-medium mb-1"
                     htmlFor="searchSpecies"
@@ -190,6 +179,7 @@ const SpeciesDropdown = ({
                     id="searchSpecies"
                     placeholder="Name eingeben..."
                     className="w-full"
+                    disabled={isMaxSelected}
                     notFoundContent={
                       loadingSearch ? (
                         <div className="p-2 text-center">
@@ -207,34 +197,29 @@ const SpeciesDropdown = ({
                       ) : null
                     }
                   />
+                  {isMaxSelected && (
+                    <p className="mt-1 text-xs text-gray-500">
+                      Entfernen Sie eine Art, um eine neue hinzuzufügen.
+                    </p>
+                  )}
                 </div>
-                <ul className="list-none mb-4">
-                  {topThreeSpecies.map((species) => (
-                    <li key={species.scientificName} className="mb-4 last:mb-0">
-                      <SpeciesItem
-                        disabled={!availability[species.id]}
-                        species={species as Species}
-                        speciesColors={speciesColors}
-                        isSelected={selectedSpecies.includes(species.id)}
-                        onClickSpecies={onClickSpecies}
-                      />
-                    </li>
-                  ))}
-                </ul>
 
-                {customSpecies && (
-                  <SpeciesItem
-                    species={customSpecies}
-                    disabled={!availability[customSpecies.id]}
-                    speciesColors={speciesColors}
-                    isSelected={selectedSpecies.includes(customSpecies.id)}
-                    onClickSpecies={(id) => {
-                      // remove custom species as it has been deselected
-                      onClickSpecies(id);
-                      setCustomSpecies(null);
-                    }}
-                  />
-                )}
+                <ul className="list-none mb-4">
+                  {selectedSpecies.map((id) => {
+                    const species = speciesMap[id];
+                    if (!species) return null;
+                    return (
+                      <li key={id} className="mb-4 last:mb-0">
+                        <SpeciesItem
+                          species={species}
+                          speciesColors={speciesColors}
+                          onRemove={() => onRemoveSpecies(id)}
+                          disabled={!availability[id]}
+                        />
+                      </li>
+                    );
+                  })}
+                </ul>
               </Spin>
             </>
           ),

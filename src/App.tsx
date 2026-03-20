@@ -9,7 +9,7 @@ import LayersDropdown from "./components/LayersDropdown.tsx";
 import { useDatesContext } from "./components/DatesProvider.tsx";
 import { FullscreenOutlined, FullscreenExitOutlined } from "@ant-design/icons";
 
-export const selectionColors = ["#FF29B4", "#64BEFF", "#00FFCC", "#FFD700"];
+export const selectionColors = ["#FF29B4", "#64BEFF", "#FFEE80"];
 
 function App() {
   const [selectedSpecies, setSelectedSpecies] = useState<string[]>([]);
